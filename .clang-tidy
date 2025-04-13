@@ -1,0 +1,27 @@
+Checks: >
+  -*,
+  bugprone-* ,
+  readability-braces-around-statements,
+  readability-function-cognitive-complexity,
+  readability-misleading-indentation,
+  readability-redundant-control-flow,
+  readability-redundant-declaration,
+  readability-simplify-boolean-expr,
+  readability-identifier-naming,
+  modernize-deprecated-headers
+
+WarningsAsErrors: '*'
+
+HeaderFileExtensions: [h]
+
+CheckOptions:
+  - key: readability-identifier-naming.VariableCase
+    value: lower_case
+  - key: readability-identifier-naming.FunctionCase
+    value: lower_case
+  - key: readability-identifier-naming.StructCase
+    value: lower_case
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE

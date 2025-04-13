@@ -1,0 +1,62 @@
+{
+   Ignore dlopen bug.
+   Memcheck:Leak
+   ...
+   fun:_dl_open
+   ...
+}
+
+{
+   Ignore dlinit bug.
+   Memcheck:Leak
+   ...
+   fun:_dl_init
+   ...
+}
+
+{
+   Ignore dlclose bug.
+   Memcheck:Leak
+   ...
+   fun:_dl_close
+   ...
+}
+
+{
+   Ignore x11 internal bug.
+   Memcheck:Leak
+   ...
+   fun:_XrmInternalStringToQuark
+   ...
+}
+
+{
+   Ignore x11 openLC bug.
+   Memcheck:Leak
+   ...
+   fun:_XOpenLC
+   ...
+}
+
+{
+   Ignore X11 threads bug.
+   Memcheck:Leak
+   ...
+   fun:XInitThreads
+   ...
+}
+
+{
+   Ignore X11 video bug.
+   Memcheck:Leak
+   ...
+   fun:X11_VideoInit
+   ...
+}
+
+{
+   glibc_dlopen_invalid_read
+   Memcheck:Addr8
+   fun:strncmp
+   ...
+}
