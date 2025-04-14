@@ -16,7 +16,7 @@ SDL_LIB     := $(SDL_DIR)/build/.libs/libSDL3.a
 
 # Sources and objects
 SRCS        :=	main.c \
-				games/snake.c
+				games/tetris.c
 OBJS        := $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 DEPS        := $(OBJS:.o=.d)
 
