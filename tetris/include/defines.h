@@ -28,15 +28,39 @@
 #define KEY_INSTA  4U
 #define KEYS	   5U
 
-typedef struct s_player
+#define	TERMINO_I		0x01U
+#define	TERMINO_T		0x02U
+#define	TERMINO_O		0x03U
+#define	TERMINO_J		0x04U
+#define	TERMINO_L		0x05U
+#define	TERMINO_S		0x06U
+#define	TERMINO_Z		0x07U
+#define	TERMINO_BONUS	0x08U //fallen
+#define	TERMINO_ANY		0xFFU
+
+
+typedef struct s_termino
 {
-	bool key[KEYS];
-} t_player;
+	uint8_t		type;
+	uint8_t		rot:2;	//0-3, bitfield
+	uint8_t		x;
+	uint8_t		y;
+} t_termino;
+
+typedef struct s_tetris
+{
+	t_termino	termino
+	uint8_t		queue[6];	// one falling and 6 in the queue 
+	uint8_t		bag[7];			// 7 next pieces once the bag is empty, generate new one);
+	uint8_t		next_termino_from_bag;
+	uint8_t		board[BOARD_HEIGHT][BOARD_WIDTH];
+} t_tetris;
 
 typedef struct s_game
 {
-	uint8_t		  board[PLAYERS][BOARD_HEIGHT][BOARD_WIDTH];
-	t_player	  player[PLAYERS];
+	uint16_t		termino[8][4];
+	bool			key[KEYS];
+	t_tetris	  tetris[PLAYERS];
 	SDL_Window*	  window;
 	SDL_Renderer* renderer;
 	SDL_Texture*  texture;

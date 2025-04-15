@@ -41,28 +41,28 @@ void handle_input(t_game* game, int* running)
 					*running = 0;
 					break;
 				case SDLK_UP:
-					game->player[0].key[KEY_ROTATE] = true;
+					game->key[KEY_ROTATE] = true;
 					break;
 				case SDLK_DOWN:
-					game->player[0].key[KEY_DOWN] = true;
+					game->key[KEY_DOWN] = true;
 					break;
 				case SDLK_LEFT:
-					game->player[0].key[KEY_LEFT] = true;
+					game->key[KEY_LEFT] = true;
 					break;
 				case SDLK_RIGHT:
-					game->player[0].key[KEY_RIGHT] = true;
+					game->key[KEY_RIGHT] = true;
 					break;
 				case SDLK_W:
-					game->player[1].key[KEY_ROTATE] = true;
+					game->key[KEY_ROTATE] = true;
 					break;
 				case SDLK_S:
-					game->player[1].key[KEY_DOWN] = true;
+					game->key[KEY_DOWN] = true;
 					break;
 				case SDLK_A:
-					game->player[1].key[KEY_LEFT] = true;
+					game->key[KEY_LEFT] = true;
 					break;
 				case SDLK_D:
-					game->player[1].key[KEY_RIGHT] = true;
+					game->key[KEY_RIGHT] = true;
 					break;
 			}
 		}
@@ -74,28 +74,28 @@ void handle_input(t_game* game, int* running)
 					*running = 0;
 					break;
 				case SDLK_UP:
-					game->player[0].key[KEY_ROTATE] = false;
+					game->key[KEY_ROTATE] = false;
 					break;
 				case SDLK_DOWN:
-					game->player[0].key[KEY_DOWN] = false;
+					game->key[KEY_DOWN] = false;
 					break;
 				case SDLK_LEFT:
-					game->player[0].key[KEY_LEFT] = false;
+					game->key[KEY_LEFT] = false;
 					break;
 				case SDLK_RIGHT:
-					game->player[0].key[KEY_RIGHT] = false;
+					game->key[KEY_RIGHT] = false;
 					break;
 				case SDLK_W:
-					game->player[1].key[KEY_ROTATE] = false;
+					game->key[KEY_ROTATE] = false;
 					break;
 				case SDLK_S:
-					game->player[1].key[KEY_DOWN] = false;
+					game->key[KEY_DOWN] = false;
 					break;
 				case SDLK_A:
-					game->player[1].key[KEY_LEFT] = false;
+					game->key[KEY_LEFT] = false;
 					break;
 				case SDLK_D:
-					game->player[1].key[KEY_RIGHT] = false;
+					game->key[KEY_RIGHT] = false;
 					break;
 			}
 		}
