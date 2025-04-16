@@ -20,8 +20,10 @@ void init_game(t_game* game)
 	game->texture = SDL_CreateTexture(game->renderer,
 									  SDL_PIXELFORMAT_ARGB8888, //why?
 									  SDL_TEXTUREACCESS_STREAMING, game->screen_w, game->screen_h);
-	game->offset_y = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
-	game->offset_x = (game->screen_w - BOARD_WIDTH * SQUARE_SIZE) / 2;
+	game->offset_y0 = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
+	game->offset_x0 = (game->screen_w / 2 - 50 - BOARD_WIDTH * SQUARE_SIZE);
+	game->offset_y1 = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
+	game->offset_x1 = (game->screen_w / 2 + 50);
 }
 
 void handle_input(t_game* game, int* running)
@@ -116,11 +118,45 @@ void clear_screen(t_game* game)
 			game->screen[y * game->screen_w + x] = 0xFF11FF11U;
 		}
 	}
-	for (uint32_t y = game->offset_y; y < game->screen_h - game->offset_y; y++)
+	
+}
+
+void render_boards(t_game* game)
+{
+	for (uint32_t y = 0U; y < BOARD_HEIGHT; y++)
 	{
-		for (uint32_t x = game->offset_x; x < game->screen_w - game->offset_x; x++)
+		for (uint32_t x = 0U; x < BOARD_WIDTH; x++)
 		{
-			game->screen[y * game->screen_w + x] = 0xFFFF00FFU;
+			uint32_t colour = 0xFF000000U;
+			if (game->tetris[0].board[y][x])
+				colour = 0xFFFFFFFFU;
+			for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
+			{
+				for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
+				{
+					game->screen[(y * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
+						+ x * SQUARE_SIZE + game->offset_x0 + xx] = colour;
+				}
+			}
+		}
+	}
+
+
+	for (uint32_t y = 0U; y < BOARD_HEIGHT; y++)
+	{
+		for (uint32_t x = 0U; x < BOARD_WIDTH; x++)
+		{
+			uint32_t colour = 0xFF000000U;
+			if (game->tetris[1].board[y][x])
+				colour = 0xFFFFFFFFU;
+			for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
+			{
+				for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
+				{
+					game->screen[(y * SQUARE_SIZE + game->offset_y1 + yy) * game->screen_w
+						+ x * SQUARE_SIZE + game->offset_x1 + xx] = colour;
+				}
+			}
 		}
 	}
 }
@@ -128,6 +164,11 @@ void clear_screen(t_game* game)
 void update_render(t_game* game)
 {
 	clear_screen(game);
+	render_boards(game);
+	//render boards
+	//render terminoes
+	//render ghost?
+	//render menu?
 }
 
 void render(t_game* game)

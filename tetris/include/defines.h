@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL.h>
 
-#define SQUARE_SIZE	   30U //cellsize of snake will be one smaller, leaving one pixel gap
+#define SQUARE_SIZE	   50U //cellsize of snake will be one smaller, leaving one pixel gap
 #define STARTING_SPEED 125U
 #define INPUT_SPEED	   125U
 
@@ -49,7 +49,7 @@ typedef struct s_termino
 
 typedef struct s_tetris
 {
-	t_termino	termino
+	t_termino	termino;
 	uint8_t		queue[6];	// one falling and 6 in the queue 
 	uint8_t		bag[7];			// 7 next pieces once the bag is empty, generate new one);
 	uint8_t		next_termino_from_bag;
@@ -66,8 +66,10 @@ typedef struct s_game
 	SDL_Texture*  texture;
 	uint32_t	  screen_w;
 	uint32_t	  screen_h;
-	uint32_t	  offset_y;
-	uint32_t	  offset_x;
+	uint32_t	  offset_y0;
+	uint32_t	  offset_x0;
+	uint32_t	  offset_y1;
+	uint32_t	  offset_x1;
 	uint32_t*	  screen;
 } t_game;
 
