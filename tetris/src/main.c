@@ -14,12 +14,12 @@ int main(void)
 	{
 		handle_input(&game, &running);
 		current_time = SDL_GetTicks();
-		if (current_time - last_move_time >= INPUT_SPEED)  // 1000 ms = 1 second
+		if (current_time - last_move_time >= STARTING_SPEED)  // 1000 ms = 1 second
 		{
 			update_game(&game); // Call your function
 			last_move_time = current_time;
 		}
-		if (current_time - last_render_time >= STARTING_SPEED)  // 1000 ms = 1 second
+		if (current_time - last_render_time >= INPUT_SPEED)  // 1000 ms = 1 second
 		{
 			update_render(&game); // Call your function
 			last_render_time = current_time;

@@ -24,6 +24,13 @@ void init_game(t_game* game)
 	game->offset_x0 = (game->screen_w / 2 - 50 - BOARD_WIDTH * SQUARE_SIZE);
 	game->offset_y1 = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
 	game->offset_x1 = (game->screen_w / 2 + 50);
+
+	game->tetris[0].termino.type = TERMINO_I;
+	game->tetris[0].termino.x = 3;
+	game->tetris[0].termino.y = 0;
+	game->termino[TERMINO_I][0] = 0x4444U;
+
+
 }
 
 void handle_input(t_game* game, int* running)
@@ -161,14 +168,43 @@ void render_boards(t_game* game)
 	}
 }
 
+void render_terminoes(t_game* game)
+{
+	for (uint32_t y = 0U; y < 4; y++)
+	{
+		for (uint32_t x = 0U; x < 4; x++)
+		{
+			uint32_t colour = 0xFFFF00FFU;
+			if ((game->termino[game->tetris[0].termino.type][0] >> (y * 4 + x)) & 1)
+			{
+				printf("here %u %u\n",y, x);
+				for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
+				{
+					for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
+					{
+						if (yy == 0 || xx == 0)
+							game->screen[((game->tetris[0].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
+								+ (game->tetris[0].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = 0xFF111111U;
+							// printf("yx %u %u\n",((game->tetris[0].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[0].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
+						else
+							game->screen[((game->tetris[0].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
+								+ (game->tetris[0].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = colour;
+					}
+				}
+			}
+		}
+	}
+}
+
 void update_render(t_game* game)
 {
 	clear_screen(game);
 	render_boards(game);
 	//render boards
-	//render terminoes
+	render_terminoes(game);
 	//render ghost?
 	//render menu?
+	//handle input
 }
 
 void render(t_game* game)
@@ -202,5 +238,6 @@ void cleanup(t_game* game)
 void update_game(t_game* game)
 {
 	/*update game logic here*/
-	(void)game;
+	if (game->tetris[0].termino.y < 19)
+		game->tetris[0].termino.y += 1;
 }
