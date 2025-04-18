@@ -5,7 +5,7 @@
 
 #define SQUARE_SIZE	   50U //cellsize of snake will be one smaller, leaving one pixel gap
 #define STARTING_SPEED 500U
-#define INPUT_SPEED	   125U
+#define INPUT_SPEED	   50U
 
 #define BOARD_WIDTH	  10U
 #define BOARD_HEIGHT  20U
@@ -25,7 +25,7 @@
 #define KEY_LEFT   1U
 #define KEY_RIGHT  2U
 #define KEY_DOWN   3U
-#define KEY_INSTA  4U
+#define KEY_DROP   4U
 #define KEYS	   5U
 
 #define	TERMINO_I		0x01U
@@ -50,17 +50,19 @@ typedef struct s_termino
 typedef struct s_tetris
 {
 	t_termino	termino;
+	bool		key[KEYS];
 	uint8_t		queue[6];	// one falling and 6 in the queue 
 	uint8_t		bag[7];			// 7 next pieces once the bag is empty, generate new one);
+	uint32_t	bag_number;
 	uint8_t		next_termino_from_bag;
 	uint8_t		board[BOARD_HEIGHT][BOARD_WIDTH];
 } t_tetris;
 
 typedef struct s_game
 {
+	uint32_t	seed;
 	uint16_t		termino[8][4];
 	uint32_t		colours[8];
-	bool			key[KEYS];
 	t_tetris	  tetris[PLAYERS];
 	SDL_Window*	  window;
 	SDL_Renderer* renderer;
