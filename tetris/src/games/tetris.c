@@ -49,7 +49,15 @@ void init_game(t_game* game)
 	shuffle_bag(game->tetris[0].bag, game->seed, game->tetris[0].bag_number);
 	game->tetris[0].termino.type = game->tetris[0].bag[0];
 	game->tetris[0].termino.x = 3;
-	game->tetris[0].termino.y = 0;
+	game->tetris[0].termino.y = -4;
+	game->colours[0] = CLR_MAGENTA;
+	game->colours[TERMINO_I] = CLR_CYAN;
+	game->colours[TERMINO_O] = CLR_YELLOW;
+	game->colours[TERMINO_T] = CLR_PURPLE;
+	game->colours[TERMINO_S] = CLR_GREEN;
+	game->colours[TERMINO_Z] = CLR_RED;
+	game->colours[TERMINO_J] = CLR_BLUE;
+	game->colours[TERMINO_L] = CLR_ORANGE;
 	game->termino[TERMINO_I][0] = 0x2222U;
 	game->termino[TERMINO_I][1] = 0x0F00U;
 	game->termino[TERMINO_I][2] = 0x2222U;
@@ -182,7 +190,7 @@ void clear_screen(t_game* game)
 	{
 		for (uint32_t x = 0U; x < game->screen_w; x++)
 		{
-			game->screen[y * game->screen_w + x] = 0xFF11FF11U;
+			game->screen[y * game->screen_w + x] = CLR_GRAY_2;
 		}
 	}
 	
@@ -196,7 +204,7 @@ void render_boards(t_game* game)
 		{
 			uint32_t colour = 0xFF000000U;
 			if (game->tetris[0].board[y][x])
-				colour = 0xFFFFFFFFU;
+				colour = game->colours[game->tetris[0].board[y][x]];
 			for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
 			{
 				for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
@@ -234,7 +242,7 @@ void render_terminoes(t_game* game)
 	{
 		for (uint32_t x = 0U; x < 4; x++)
 		{
-			uint32_t colour = 0xFFFF00FFU;
+			uint32_t colour = game->colours[game->tetris[PLAYER_1].termino.type];
 			if ((game->termino[game->tetris[0].termino.type][game->tetris[0].termino.rot] >> (y * 4 + x)) & 1)
 			{
 				// printf("here %u %u\n",y, x);
@@ -264,7 +272,7 @@ bool	is_move_valid(uint16_t termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH], i
 		{
 			if ((termino >> (yy * 4 + xx)) & 1)
 			{
-				printf("%i %i\n", y +yy, x + xx);
+				// printf("%i %i\n", y +yy, x + xx);
 				if (y + yy >= (int8_t)BOARD_HEIGHT)
 					return (false);
 				if (x + xx < 0 || x + xx >= (int8_t)BOARD_WIDTH)
@@ -368,10 +376,48 @@ void cleanup(t_game* game)
 	SDL_Quit();
 }
 
+//handle game over here
+void	init_termino(t_game *game, int player)
+{
+	game->tetris[player].next_termino_from_bag += 1;
+	if (game->tetris[player].next_termino_from_bag == 7)
+	{
+		game->tetris[player].bag_number += 1;
+		shuffle_bag(game->tetris[player].bag, game->seed, game->tetris[player].bag_number);
+		game->tetris[player].next_termino_from_bag = 0;
+	}
+	game->tetris[player].termino.type = game->tetris[player].bag[game->tetris[player].next_termino_from_bag];
+	game->tetris[player].termino.x = 3;
+	game->tetris[player].termino.y = -4;
+}
+
+void update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
+{
+	for (int8_t yy = 0; yy < 4; yy++)
+	{
+		for (int8_t xx = 0; xx < 4; xx++)
+		{
+			if ((game->termino[termino.type][termino.rot] >> (yy * 4 + xx)) & 1)
+			{
+				board[yy + termino.y][xx + termino.x] = termino.type;
+			}
+		}
+	}
+
+	//clear lines
+}
+
 void update_game(t_game* game)
 {
 	/*update game logic here*/
 	if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
 		game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
 		game->tetris[0].termino.y += 1;
+	else
+	{
+		//write in board
+		update_board(game, game->tetris[PLAYER_1].termino, game->tetris[PLAYER_1].board);
+		//init new termino
+		init_termino(game, PLAYER_1);
+	}
 }
