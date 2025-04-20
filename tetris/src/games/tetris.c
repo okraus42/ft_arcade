@@ -32,7 +32,8 @@ void init_game(t_game* game)
 	bzero(game, sizeof(t_game));
 	game->screen_w = mode->w;
 	game->screen_h = mode->h;
-
+	game->running[PLAYER_1] = true;
+	game->running[PLAYER_2] = true;
 	game->window = SDL_CreateWindow("snake", game->screen_w, game->screen_h, SDL_WINDOW_FULLSCREEN);
 	game->renderer = SDL_CreateRenderer(game->window, NULL);
 
@@ -89,21 +90,21 @@ void init_game(t_game* game)
 
 }
 
-void handle_input(t_game* game, int* running)
+void handle_input(t_game* game, bool* running)
 {
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
 		if (e.type == SDL_EVENT_QUIT)
 		{
-			*running = 0;
+			*running = false;
 		}
 		else if (e.type == SDL_EVENT_KEY_DOWN)
 		{
 			switch (e.key.key)
 			{
 				case SDLK_ESCAPE:
-					*running = 0;
+					*running = false;
 					break;
 				case SDLK_UP:
 					game->tetris[PLAYER_1].key[KEY_ROTATE] = true;

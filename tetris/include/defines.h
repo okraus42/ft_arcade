@@ -140,6 +140,7 @@ typedef struct s_tetris
 
 typedef struct s_game
 {
+	bool		running[PLAYERS];
 	uint32_t	seed;
 	uint16_t		termino[8][4];
 	uint32_t		colours[8];
@@ -157,7 +158,7 @@ typedef struct s_game
 } t_game;
 
 void init_game(t_game* game);
-void handle_input(t_game* game, int* running);
+void handle_input(t_game* game, bool* running);
 void render(t_game* game);
 void update_render(t_game* game);
 void update_game(t_game* game);
