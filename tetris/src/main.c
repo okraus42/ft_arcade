@@ -14,18 +14,20 @@ int main(void)
 		current_time = SDL_GetTicks();
 		if (current_time - last_move_time >= STARTING_SPEED)  // 1000 ms = 1 second
 		{
-			update_game(&game); // Call your function
+			if (game.running[PLAYER_1])
+				update_game(&game); // Call your function
 			last_move_time = current_time;
 		}
 		if (current_time - last_render_time >= INPUT_SPEED)  // 1000 ms = 1 second
 		{
+			// if (game.running[PLAYER_1])
 			update_render(&game); // Call your function
 			last_render_time = current_time;
 		}
 		render(&game);
-		SDL_Delay(16); // ~60 FPS
 		if (running)
-			running = game.running[PLAYER_1];
+			running = game.running[PLAYER_1] | game.running[PLAYER_2];
+		SDL_Delay(16); // ~60 FPS
 	}
 
 	cleanup(&game);

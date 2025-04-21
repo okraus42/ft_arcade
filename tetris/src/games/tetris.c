@@ -50,7 +50,7 @@ void init_game(t_game* game)
 	shuffle_bag(game->tetris[0].bag, game->seed, game->tetris[0].bag_number);
 	game->tetris[0].termino.type = game->tetris[0].bag[0];
 	game->tetris[0].termino.x = 3;
-	game->tetris[0].termino.y = -4;
+	game->tetris[0].termino.y = 0;
 	game->colours[0] = CLR_MAGENTA;
 	game->colours[TERMINO_I] = CLR_CYAN;
 	game->colours[TERMINO_O] = CLR_YELLOW;
@@ -286,10 +286,39 @@ bool	is_move_valid(uint16_t termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH], i
 	return (true);
 }
 
+bool	predrop_termino(t_game *game, t_termino *termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
+{
+	bool	has_dropped = false;
+	while (!has_dropped)
+	{
+		termino->y += 1;
+		has_dropped = true;
+		for (int8_t y = 0; y < 4; y++)
+		{
+			for (int8_t x = 0; x < 4; x++)
+			{
+				if ((game->termino[termino->type][0] >> (y * 4 + x)) & 1)
+				{
+					if (termino->y + y < 0)
+						has_dropped = false;
+					if (termino->y + y >= 0 && board[termino->y + y][termino->x + x])
+					{
+						termino->y -= 1;
+						return (false);
+					}
+				}
+			}
+		}
+	}
+	return (true);
+}
+
 // check if possible to move
 
 void	check_input(t_game *game)
 {
+	if (game->running[PLAYER_1] == false)
+		return ;
 	if (game->tetris[PLAYER_1].key[KEY_ROTATE])
 	{
 		if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][(game->tetris[PLAYER_1].termino.rot + 1) % 4],
@@ -377,6 +406,46 @@ void cleanup(t_game* game)
 	SDL_Quit();
 }
 
+void update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
+{
+	uint8_t fills;
+
+	for (int8_t y = 0; y < 4; y++)
+	{
+		for (int8_t x = 0; x < 4; x++)
+		{
+			if ((game->termino[termino.type][termino.rot] >> (y * 4 + x)) & 1)
+			{
+				board[y + termino.y][x + termino.x] = termino.type;
+			}
+		}
+	}
+
+	//clear lines
+	for (int8_t y = 0; y < (int)BOARD_HEIGHT; y++)
+	{
+		fills = 0;
+		for (int8_t x = 0; x < (int)BOARD_WIDTH; x++)
+		{
+			if (board[y][x])
+				fills += 1;
+			else
+				break ;
+		}
+		if (fills == BOARD_WIDTH)
+		{
+			for (int8_t yy = y; yy > 0; yy--)
+			{
+				for (int8_t x = 0; x < (int)BOARD_WIDTH; x++)
+					board[yy][x] = board[yy - 1][x];
+			}
+			for (int8_t x = 0; x < (int)BOARD_WIDTH; x++)
+				board[0][x] = 0U;
+		}
+	}
+}
+
+
 //handle game over here
 void	init_termino(t_game *game, int player)
 {
@@ -386,34 +455,27 @@ void	init_termino(t_game *game, int player)
 		game->tetris[player].bag_number += 1;
 		shuffle_bag(game->tetris[player].bag, game->seed, game->tetris[player].bag_number);
 		game->tetris[player].next_termino_from_bag = 0;
+		// game->running[player] = false;
 	}
 	game->tetris[player].termino.type = game->tetris[player].bag[game->tetris[player].next_termino_from_bag];
 	game->tetris[player].termino.x = 3;
 	game->tetris[player].termino.y = -4;
-}
-
-void update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
-{
-	for (int8_t yy = 0; yy < 4; yy++)
+	game->tetris[player].termino.rot = 0U;
+	if (!predrop_termino(game, &(game->tetris[player].termino), game->tetris[player].board))
 	{
-		for (int8_t xx = 0; xx < 4; xx++)
-		{
-			if ((game->termino[termino.type][termino.rot] >> (yy * 4 + xx)) & 1)
-			{
-				board[yy + termino.y][xx + termino.x] = termino.type;
-			}
-		}
+		game->running[player] = false;
+		update_board(game, game->tetris[player].termino, game->tetris[player].board);
 	}
-
-	//clear lines
+	printf("%i \n", game->tetris[player].termino.y);
 }
+
 
 void update_game(t_game* game)
 {
 	/*update game logic here*/
 	if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
 		game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
-		game->tetris[0].termino.y += 1;
+		game->tetris[PLAYER_1].termino.y += 1;
 	else
 	{
 		//write in board

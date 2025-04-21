@@ -136,12 +136,17 @@ typedef struct s_tetris
 	uint32_t	bag_number;
 	uint8_t		next_termino_from_bag;
 	uint8_t		board[BOARD_HEIGHT][BOARD_WIDTH];
+	uint32_t	next_move; //use in main loop
+	uint32_t	next_tick; //use in main loop
+	uint32_t	game_speed;
+	uint32_t	score;
+	uint32_t	level;
 } t_tetris;
 
 typedef struct s_game
 {
-	bool		running[PLAYERS];
-	uint32_t	seed;
+	bool			running[PLAYERS];
+	uint32_t		seed;
 	uint16_t		termino[8][4];
 	uint32_t		colours[8];
 	t_tetris	  tetris[PLAYERS];
