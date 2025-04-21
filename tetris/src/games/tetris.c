@@ -466,7 +466,7 @@ void	init_termino(t_game *game, int player)
 		game->running[player] = false;
 		update_board(game, game->tetris[player].termino, game->tetris[player].board);
 	}
-	printf("%i \n", game->tetris[player].termino.y);
+	// printf("%i \n", game->tetris[player].termino.y);
 }
 
 
