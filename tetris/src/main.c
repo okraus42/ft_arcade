@@ -1,4 +1,5 @@
 #include "../include/defines.h"
+#include <stdio.h>
 
 int main(void)
 {
@@ -29,7 +30,7 @@ int main(void)
 			running = game.running[PLAYER_1] | game.running[PLAYER_2];
 		SDL_Delay(16); // ~60 FPS
 	}
-
+	printf("Player 1: %8u\nPlayer2: %8u\n", game.tetris[PLAYER_1].score, game.tetris[PLAYER_2].score);
 	cleanup(&game);
 	return 0;
 }

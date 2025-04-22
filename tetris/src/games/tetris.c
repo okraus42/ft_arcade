@@ -406,9 +406,11 @@ void cleanup(t_game* game)
 	SDL_Quit();
 }
 
-void update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
+uint32_t update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
 {
 	uint8_t fills;
+	uint32_t	lines = 0;
+	static const uint32_t score[5] = {0, 100, 300, 800, 2000};
 
 	for (int8_t y = 0; y < 4; y++)
 	{
@@ -434,6 +436,7 @@ void update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][B
 		}
 		if (fills == BOARD_WIDTH)
 		{
+			lines++;
 			for (int8_t yy = y; yy > 0; yy--)
 			{
 				for (int8_t x = 0; x < (int)BOARD_WIDTH; x++)
@@ -443,6 +446,7 @@ void update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][B
 				board[0][x] = 0U;
 		}
 	}
+	return (score[lines]);
 }
 
 
@@ -479,7 +483,7 @@ void update_game(t_game* game)
 	else
 	{
 		//write in board
-		update_board(game, game->tetris[PLAYER_1].termino, game->tetris[PLAYER_1].board);
+		game->tetris[PLAYER_1].score += update_board(game, game->tetris[PLAYER_1].termino, game->tetris[PLAYER_1].board);
 		//init new termino
 		init_termino(game, PLAYER_1);
 	}
