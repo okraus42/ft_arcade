@@ -47,10 +47,14 @@ void init_game(t_game* game)
 	game->offset_x1 = (game->screen_w / 2 + 50);
 
 	game->seed = time(NULL);
-	shuffle_bag(game->tetris[0].bag, game->seed, game->tetris[0].bag_number);
-	game->tetris[0].termino.type = game->tetris[0].bag[0];
-	game->tetris[0].termino.x = 3;
-	game->tetris[0].termino.y = 0;
+	shuffle_bag(game->tetris[PLAYER_1].bag, game->seed, game->tetris[PLAYER_1].bag_number);
+	game->tetris[PLAYER_1].termino.type = game->tetris[PLAYER_1].bag[0];
+	game->tetris[PLAYER_1].termino.x = 3;
+	game->tetris[PLAYER_1].termino.y = 0;
+	shuffle_bag(game->tetris[PLAYER_2].bag, game->seed, game->tetris[PLAYER_2].bag_number);
+	game->tetris[PLAYER_2].termino.type = game->tetris[PLAYER_2].bag[0];
+	game->tetris[PLAYER_2].termino.x = 3;
+	game->tetris[PLAYER_2].termino.y = 0;
 	game->colours[0] = CLR_MAGENTA;
 	game->colours[TERMINO_I] = CLR_CYAN;
 	game->colours[TERMINO_O] = CLR_YELLOW;
@@ -107,34 +111,34 @@ void handle_input(t_game* game, bool* running)
 					*running = false;
 					break;
 				case SDLK_UP:
-					game->tetris[PLAYER_1].key[KEY_ROTATE] = true;
-					break;
-				case SDLK_DOWN:
-					game->tetris[PLAYER_1].key[KEY_DOWN] = true;
-					break;
-				case SDLK_LEFT:
-					game->tetris[PLAYER_1].key[KEY_LEFT] = true;
-					break;
-				case SDLK_RIGHT:
-					game->tetris[PLAYER_1].key[KEY_RIGHT] = true;
-					break;
-				case SDLK_SPACE:
-					game->tetris[PLAYER_1].key[KEY_DROP] = true;
-					break;
-				case SDLK_W:
 					game->tetris[PLAYER_2].key[KEY_ROTATE] = true;
 					break;
-				case SDLK_S:
+				case SDLK_DOWN:
 					game->tetris[PLAYER_2].key[KEY_DOWN] = true;
 					break;
-				case SDLK_A:
+				case SDLK_LEFT:
 					game->tetris[PLAYER_2].key[KEY_LEFT] = true;
 					break;
-				case SDLK_D:
+				case SDLK_RIGHT:
 					game->tetris[PLAYER_2].key[KEY_RIGHT] = true;
 					break;
-				case SDLK_LCTRL:
+				case SDLK_SPACE:
 					game->tetris[PLAYER_2].key[KEY_DROP] = true;
+					break;
+				case SDLK_W:
+					game->tetris[PLAYER_1].key[KEY_ROTATE] = true;
+					break;
+				case SDLK_S:
+					game->tetris[PLAYER_1].key[KEY_DOWN] = true;
+					break;
+				case SDLK_A:
+					game->tetris[PLAYER_1].key[KEY_LEFT] = true;
+					break;
+				case SDLK_D:
+					game->tetris[PLAYER_1].key[KEY_RIGHT] = true;
+					break;
+				case SDLK_LCTRL:
+					game->tetris[PLAYER_1].key[KEY_DROP] = true;
 					break;
 			}
 		}
@@ -146,34 +150,34 @@ void handle_input(t_game* game, bool* running)
 					*running = 0;
 					break;
 				case SDLK_UP:
-					game->tetris[PLAYER_1].key[KEY_ROTATE] = false;
-					break;
-				case SDLK_DOWN:
-					game->tetris[PLAYER_1].key[KEY_DOWN] = false;
-					break;
-				case SDLK_LEFT:
-					game->tetris[PLAYER_1].key[KEY_LEFT] = false;
-					break;
-				case SDLK_RIGHT:
-					game->tetris[PLAYER_1].key[KEY_RIGHT] = false;
-					break;
-				case SDLK_SPACE:
-					game->tetris[PLAYER_1].key[KEY_DROP] = false;
-					break;
-				case SDLK_W:
 					game->tetris[PLAYER_2].key[KEY_ROTATE] = false;
 					break;
-				case SDLK_S:
+				case SDLK_DOWN:
 					game->tetris[PLAYER_2].key[KEY_DOWN] = false;
 					break;
-				case SDLK_A:
+				case SDLK_LEFT:
 					game->tetris[PLAYER_2].key[KEY_LEFT] = false;
 					break;
-				case SDLK_D:
+				case SDLK_RIGHT:
 					game->tetris[PLAYER_2].key[KEY_RIGHT] = false;
 					break;
-				case SDLK_LCTRL:
+				case SDLK_SPACE:
 					game->tetris[PLAYER_2].key[KEY_DROP] = false;
+					break;
+				case SDLK_W:
+					game->tetris[PLAYER_1].key[KEY_ROTATE] = false;
+					break;
+				case SDLK_S:
+					game->tetris[PLAYER_1].key[KEY_DOWN] = false;
+					break;
+				case SDLK_A:
+					game->tetris[PLAYER_1].key[KEY_LEFT] = false;
+					break;
+				case SDLK_D:
+					game->tetris[PLAYER_1].key[KEY_RIGHT] = false;
+					break;
+				case SDLK_LCTRL:
+					game->tetris[PLAYER_1].key[KEY_DROP] = false;
 					break;
 			}
 		}
@@ -204,8 +208,8 @@ void render_boards(t_game* game)
 		for (uint32_t x = 0U; x < BOARD_WIDTH; x++)
 		{
 			uint32_t colour = 0xFF000000U;
-			if (game->tetris[0].board[y][x])
-				colour = game->colours[game->tetris[0].board[y][x]];
+			if (game->tetris[PLAYER_1].board[y][x])
+				colour = game->colours[game->tetris[PLAYER_1].board[y][x]];
 			for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
 			{
 				for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
@@ -223,8 +227,8 @@ void render_boards(t_game* game)
 		for (uint32_t x = 0U; x < BOARD_WIDTH; x++)
 		{
 			uint32_t colour = 0xFF000000U;
-			if (game->tetris[1].board[y][x])
-				colour = 0xFFFFFFFFU;
+			if (game->tetris[PLAYER_2].board[y][x])
+			colour = game->colours[game->tetris[PLAYER_2].board[y][x]];
 			for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
 			{
 				for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
@@ -244,7 +248,7 @@ void render_terminoes(t_game* game)
 		for (uint32_t x = 0U; x < 4; x++)
 		{
 			uint32_t colour = game->colours[game->tetris[PLAYER_1].termino.type];
-			if ((game->termino[game->tetris[0].termino.type][game->tetris[0].termino.rot] >> (y * 4 + x)) & 1)
+			if ((game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot] >> (y * 4 + x)) & 1)
 			{
 				// printf("here %u %u\n",y, x);
 				for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
@@ -252,12 +256,36 @@ void render_terminoes(t_game* game)
 					for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
 					{
 						if (yy == 0 || xx == 0)
-							game->screen[((game->tetris[0].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
-								+ (game->tetris[0].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = 0xFF111111U;
-							// printf("yx %u %u\n",((game->tetris[0].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[0].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
+							game->screen[((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
+								+ (game->tetris[PLAYER_1].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = 0xFF111111U;
+							// printf("yx %u %u\n",((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[PLAYER_1].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
 						else
-							game->screen[((game->tetris[0].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
-								+ (game->tetris[0].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = colour;
+							game->screen[((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
+								+ (game->tetris[PLAYER_1].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = colour;
+					}
+				}
+			}
+		}
+	}
+	for (uint32_t y = 0U; y < 4; y++)
+	{
+		for (uint32_t x = 0U; x < 4; x++)
+		{
+			uint32_t colour = game->colours[game->tetris[PLAYER_2].termino.type];
+			if ((game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot] >> (y * 4 + x)) & 1)
+			{
+				// printf("here %u %u\n",y, x);
+				for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
+				{
+					for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
+					{
+						if (yy == 0 || xx == 0)
+							game->screen[((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y1 + yy) * game->screen_w
+								+ (game->tetris[PLAYER_2].termino.x + x) * SQUARE_SIZE + game->offset_x1 + xx] = 0xFF111111U;
+							// printf("yx %u %u\n",((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[PLAYER_2].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
+						else
+							game->screen[((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y1 + yy) * game->screen_w
+								+ (game->tetris[PLAYER_2].termino.x + x) * SQUARE_SIZE + game->offset_x1 + xx] = colour;
 					}
 				}
 			}
@@ -319,50 +347,103 @@ void	check_input(t_game *game)
 {
 	if (game->running[PLAYER_1] == false)
 		return ;
-	if (game->tetris[PLAYER_1].key[KEY_ROTATE])
+	else
 	{
-		if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][(game->tetris[PLAYER_1].termino.rot + 1) % 4],
-			game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y))
+		if (game->tetris[PLAYER_1].key[KEY_ROTATE])
 		{
-			game->tetris[PLAYER_1].termino.rot += 1U;
-			game->tetris[PLAYER_1].key[KEY_ROTATE] = false;
+			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][(game->tetris[PLAYER_1].termino.rot + 1) % 4],
+				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y))
+			{
+				game->tetris[PLAYER_1].termino.rot += 1U;
+				game->tetris[PLAYER_1].key[KEY_ROTATE] = false;
+			}
+		}
+		if (game->tetris[PLAYER_1].key[KEY_DOWN])
+		{
+			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
+				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
+			{
+				// game->tetris[PLAYER_1].key[KEY_DOWN] = false;
+				game->tetris[PLAYER_1].termino.y += 1;
+			}
+		}
+		if (game->tetris[PLAYER_1].key[KEY_LEFT])
+		{
+			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
+				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x - 1, game->tetris[PLAYER_1].termino.y))
+			{
+				// game->tetris[PLAYER_1].key[KEY_LEFT] = false;
+				game->tetris[PLAYER_1].termino.x -= 1;
+			}
+		}
+		if (game->tetris[PLAYER_1].key[KEY_RIGHT])
+		{
+			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
+				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x + 1, game->tetris[PLAYER_1].termino.y))
+			{
+				// game->tetris[PLAYER_1].key[KEY_RIGHT] = false;
+				game->tetris[PLAYER_1].termino.x += 1;
+			}
+		}
+		if (game->tetris[PLAYER_1].key[KEY_DROP])
+		{
+			while (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
+				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
+			{
+				game->tetris[PLAYER_1].termino.y += 1;
+			}
+			game->tetris[PLAYER_1].key[KEY_DROP] = false;
 		}
 	}
-	if (game->tetris[PLAYER_1].key[KEY_DOWN])
+	if (game->running[PLAYER_2] == false)
+		return ;
+	else
 	{
-		if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-			game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
+		if (game->tetris[PLAYER_2].key[KEY_ROTATE])
 		{
-			// game->tetris[PLAYER_1].key[KEY_DOWN] = false;
-			game->tetris[PLAYER_1].termino.y += 1;
+			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][(game->tetris[PLAYER_2].termino.rot + 1) % 4],
+				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y))
+			{
+				game->tetris[PLAYER_2].termino.rot += 1U;
+				game->tetris[PLAYER_2].key[KEY_ROTATE] = false;
+			}
 		}
-	}
-	if (game->tetris[PLAYER_1].key[KEY_LEFT])
-	{
-		if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-			game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x - 1, game->tetris[PLAYER_1].termino.y))
+		if (game->tetris[PLAYER_2].key[KEY_DOWN])
 		{
-			// game->tetris[PLAYER_1].key[KEY_LEFT] = false;
-			game->tetris[PLAYER_1].termino.x -= 1;
+			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
+				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y + 1))
+			{
+				// game->tetris[PLAYER_2].key[KEY_DOWN] = false;
+				game->tetris[PLAYER_2].termino.y += 1;
+			}
 		}
-	}
-	if (game->tetris[PLAYER_1].key[KEY_RIGHT])
-	{
-		if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-			game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x + 1, game->tetris[PLAYER_1].termino.y))
+		if (game->tetris[PLAYER_2].key[KEY_LEFT])
 		{
-			// game->tetris[PLAYER_1].key[KEY_RIGHT] = false;
-			game->tetris[PLAYER_1].termino.x += 1;
+			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
+				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x - 1, game->tetris[PLAYER_2].termino.y))
+			{
+				// game->tetris[PLAYER_2].key[KEY_LEFT] = false;
+				game->tetris[PLAYER_2].termino.x -= 1;
+			}
 		}
-	}
-	if (game->tetris[PLAYER_1].key[KEY_DROP])
-	{
-		while (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-			game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
+		if (game->tetris[PLAYER_2].key[KEY_RIGHT])
 		{
-			game->tetris[PLAYER_1].termino.y += 1;
+			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
+				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x + 1, game->tetris[PLAYER_2].termino.y))
+			{
+				// game->tetris[PLAYER_2].key[KEY_RIGHT] = false;
+				game->tetris[PLAYER_2].termino.x += 1;
+			}
 		}
-		game->tetris[PLAYER_1].key[KEY_DROP] = false;
+		if (game->tetris[PLAYER_2].key[KEY_DROP])
+		{
+			while (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
+				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y + 1))
+			{
+				game->tetris[PLAYER_2].termino.y += 1;
+			}
+			game->tetris[PLAYER_2].key[KEY_DROP] = false;
+		}
 	}
 }
 
@@ -474,7 +555,7 @@ void	init_termino(t_game *game, int player)
 }
 
 
-void update_game(t_game* game)
+void update_game_1(t_game* game)
 {
 	/*update game logic here*/
 	if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
@@ -486,5 +567,20 @@ void update_game(t_game* game)
 		game->tetris[PLAYER_1].score += update_board(game, game->tetris[PLAYER_1].termino, game->tetris[PLAYER_1].board);
 		//init new termino
 		init_termino(game, PLAYER_1);
+	}
+}
+
+void update_game_2(t_game* game)
+{
+	/*update game logic here*/
+	if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
+		game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y + 1))
+		game->tetris[PLAYER_2].termino.y += 1;
+	else
+	{
+		//write in board
+		game->tetris[PLAYER_2].score += update_board(game, game->tetris[PLAYER_2].termino, game->tetris[PLAYER_2].board);
+		//init new termino
+		init_termino(game, PLAYER_2);
 	}
 }

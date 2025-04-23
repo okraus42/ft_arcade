@@ -166,7 +166,8 @@ void init_game(t_game* game);
 void handle_input(t_game* game, bool* running);
 void render(t_game* game);
 void update_render(t_game* game);
-void update_game(t_game* game);
+void update_game_1(t_game* game);
+void update_game_2(t_game* game);
 void move_snake(t_game* game);
 void cleanup(t_game* game);
 
