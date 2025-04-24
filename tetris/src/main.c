@@ -29,7 +29,7 @@ int main(void)
 		}
 		render(&game);
 		if (running)
-			running = game.running[PLAYER_1] | game.running[PLAYER_2];
+			running = game.running[PLAYER_1] || game.running[PLAYER_2];
 		SDL_Delay(16); // ~60 FPS
 	}
 	printf("Player 1: %8u\nPlayer 2: %8u\n", game.tetris[PLAYER_1].score, game.tetris[PLAYER_2].score);

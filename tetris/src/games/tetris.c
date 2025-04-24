@@ -345,9 +345,7 @@ bool	predrop_termino(t_game *game, t_termino *termino, uint8_t board[BOARD_HEIGH
 
 void	check_input(t_game *game)
 {
-	if (game->running[PLAYER_1] == false)
-		return ;
-	else
+	if (game->running[PLAYER_1] == true)
 	{
 		if (game->tetris[PLAYER_1].key[KEY_ROTATE])
 		{
@@ -395,9 +393,7 @@ void	check_input(t_game *game)
 			game->tetris[PLAYER_1].key[KEY_DROP] = false;
 		}
 	}
-	if (game->running[PLAYER_2] == false)
-		return ;
-	else
+	if (game->running[PLAYER_2] == true)
 	{
 		if (game->tetris[PLAYER_2].key[KEY_ROTATE])
 		{
