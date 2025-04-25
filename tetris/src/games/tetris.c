@@ -51,10 +51,14 @@ void init_game(t_game* game)
 	game->tetris[PLAYER_1].termino.type = game->tetris[PLAYER_1].bag[0];
 	game->tetris[PLAYER_1].termino.x = 3;
 	game->tetris[PLAYER_1].termino.y = 0;
+	game->tetris[PLAYER_1].game_speed = 20U;
+	game->tetris[PLAYER_1].next_move = 20U;
 	shuffle_bag(game->tetris[PLAYER_2].bag, game->seed, game->tetris[PLAYER_2].bag_number);
 	game->tetris[PLAYER_2].termino.type = game->tetris[PLAYER_2].bag[0];
 	game->tetris[PLAYER_2].termino.x = 3;
 	game->tetris[PLAYER_2].termino.y = 0;
+	game->tetris[PLAYER_2].game_speed = 20U;
+	game->tetris[PLAYER_2].next_move = 20U;
 	game->colours[0] = CLR_MAGENTA;
 	game->colours[TERMINO_I] = CLR_CYAN;
 	game->colours[TERMINO_O] = CLR_YELLOW;
@@ -361,7 +365,7 @@ void	check_input(t_game *game)
 			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
 				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
 			{
-				// game->tetris[PLAYER_1].key[KEY_DOWN] = false;
+				game->tetris[PLAYER_1].key[KEY_DOWN] = false;
 				game->tetris[PLAYER_1].termino.y += 1;
 			}
 		}
@@ -370,7 +374,7 @@ void	check_input(t_game *game)
 			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
 				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x - 1, game->tetris[PLAYER_1].termino.y))
 			{
-				// game->tetris[PLAYER_1].key[KEY_LEFT] = false;
+				game->tetris[PLAYER_1].key[KEY_LEFT] = false;
 				game->tetris[PLAYER_1].termino.x -= 1;
 			}
 		}
@@ -379,7 +383,7 @@ void	check_input(t_game *game)
 			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
 				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x + 1, game->tetris[PLAYER_1].termino.y))
 			{
-				// game->tetris[PLAYER_1].key[KEY_RIGHT] = false;
+				game->tetris[PLAYER_1].key[KEY_RIGHT] = false;
 				game->tetris[PLAYER_1].termino.x += 1;
 			}
 		}
@@ -409,7 +413,7 @@ void	check_input(t_game *game)
 			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
 				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y + 1))
 			{
-				// game->tetris[PLAYER_2].key[KEY_DOWN] = false;
+				game->tetris[PLAYER_2].key[KEY_DOWN] = false;
 				game->tetris[PLAYER_2].termino.y += 1;
 			}
 		}
@@ -418,7 +422,7 @@ void	check_input(t_game *game)
 			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
 				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x - 1, game->tetris[PLAYER_2].termino.y))
 			{
-				// game->tetris[PLAYER_2].key[KEY_LEFT] = false;
+				game->tetris[PLAYER_2].key[KEY_LEFT] = false;
 				game->tetris[PLAYER_2].termino.x -= 1;
 			}
 		}
@@ -427,7 +431,7 @@ void	check_input(t_game *game)
 			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
 				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x + 1, game->tetris[PLAYER_2].termino.y))
 			{
-				// game->tetris[PLAYER_2].key[KEY_RIGHT] = false;
+				game->tetris[PLAYER_2].key[KEY_RIGHT] = false;
 				game->tetris[PLAYER_2].termino.x += 1;
 			}
 		}
@@ -485,8 +489,53 @@ void cleanup(t_game* game)
 
 uint32_t update_board(t_game *game, t_tetris *tetris)
 {
+	const static uint8_t tetris_frames_per_row[256] = {
+		// Levels 0–9 (custom NES-style)
+		20, 18, 16, 14, 12, 10, 8, 7, 6, 6,
+	
+		// Levels 10–15 → 5
+		5, 5, 5, 5, 5, 5,
+	
+		// Levels 16–31 → 4
+		4, 4, 4, 4, 4, 4, 4, 4,
+		4, 4, 4, 4, 4, 4, 4, 4,
+	
+		// Levels 32–63 → 3
+		3, 3, 3, 3, 3, 3, 3, 3,
+		3, 3, 3, 3, 3, 3, 3, 3,
+		3, 3, 3, 3, 3, 3, 3, 3,
+		3, 3, 3, 3, 3, 3, 3, 3,
+	
+		// Levels 64–127 → 2
+		2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2,
+	
+		// Levels 128–255 → 1
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1
+	};
 	uint8_t fills;
-	uint32_t	lines = 0;
+	uint8_t	lines = 0;
 	static const uint32_t score[5] = {0, 100, 300, 800, 2000};
 
 	for (int8_t y = 0; y < 4; y++)
@@ -525,6 +574,7 @@ uint32_t update_board(t_game *game, t_tetris *tetris)
 	}
 	tetris->lines += lines;
 	tetris->level = tetris->lines / 10;
+	tetris->game_speed = tetris_frames_per_row[tetris->level];
 	return (score[lines]);
 }
 
@@ -566,6 +616,7 @@ void update_game_1(t_game* game)
 		//init new termino
 		init_termino(game, PLAYER_1);
 	}
+	game->tetris[PLAYER_1].next_move = game->frame + game->tetris[PLAYER_1].game_speed;
 }
 
 void update_game_2(t_game* game)
@@ -581,4 +632,5 @@ void update_game_2(t_game* game)
 		//init new termino
 		init_termino(game, PLAYER_2);
 	}
+	game->tetris[PLAYER_2].next_move = game->frame + game->tetris[PLAYER_2].game_speed;
 }

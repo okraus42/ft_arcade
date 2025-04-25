@@ -5,7 +5,7 @@
 
 #define SQUARE_SIZE	   50U //cellsize of snake will be one smaller, leaving one pixel gap
 #define STARTING_SPEED 500U
-#define INPUT_SPEED	   50U
+#define INPUT_SPEED	   16U
 
 #define BOARD_WIDTH	  10U
 #define BOARD_HEIGHT  20U
@@ -139,7 +139,7 @@ typedef struct s_tetris
 	uint8_t	  board[BOARD_HEIGHT][BOARD_WIDTH];
 	uint32_t  next_move; //use in main loop
 	uint32_t  next_tick; //use in main loop
-	uint32_t  game_speed;
+	uint8_t  game_speed;
 	uint32_t  score;
 	uint32_t  level;
 	uint32_t  lines;
@@ -162,6 +162,7 @@ typedef struct t_game
 	uint32_t	  offset_y1;
 	uint32_t	  offset_x1;
 	uint32_t*	  screen;
+	uint32_t		frame;
 } t_game;
 
 void init_game(t_game* game);
