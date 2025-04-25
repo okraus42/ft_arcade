@@ -32,8 +32,8 @@ void init_game(t_game* game)
 	bzero(game, sizeof(t_game));
 	game->screen_w = mode->w;
 	game->screen_h = mode->h;
-	game->running[PLAYER_1] = true;
-	game->running[PLAYER_2] = true;
+	game->tetris[PLAYER_1].running = true;
+	game->tetris[PLAYER_2].running = true;
 	game->window = SDL_CreateWindow("snake", game->screen_w, game->screen_h, SDL_WINDOW_FULLSCREEN);
 	game->renderer = SDL_CreateRenderer(game->window, NULL);
 
@@ -345,7 +345,7 @@ bool	predrop_termino(t_game *game, t_termino *termino, uint8_t board[BOARD_HEIGH
 
 void	check_input(t_game *game)
 {
-	if (game->running[PLAYER_1] == true)
+	if (game->tetris[PLAYER_1].running == true)
 	{
 		if (game->tetris[PLAYER_1].key[KEY_ROTATE])
 		{
@@ -393,7 +393,7 @@ void	check_input(t_game *game)
 			game->tetris[PLAYER_1].key[KEY_DROP] = false;
 		}
 	}
-	if (game->running[PLAYER_2] == true)
+	if (game->tetris[PLAYER_2].running == true)
 	{
 		if (game->tetris[PLAYER_2].key[KEY_ROTATE])
 		{
@@ -483,7 +483,7 @@ void cleanup(t_game* game)
 	SDL_Quit();
 }
 
-uint32_t update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
+uint32_t update_board(t_game *game, t_tetris *tetris)
 {
 	uint8_t fills;
 	uint32_t	lines = 0;
@@ -493,9 +493,9 @@ uint32_t update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGH
 	{
 		for (int8_t x = 0; x < 4; x++)
 		{
-			if ((game->termino[termino.type][termino.rot] >> (y * 4 + x)) & 1)
+			if ((game->termino[tetris->termino.type][tetris->termino.rot] >> (y * 4 + x)) & 1)
 			{
-				board[y + termino.y][x + termino.x] = termino.type;
+				tetris->board[y + tetris->termino.y][x + tetris->termino.x] = tetris->termino.type;
 			}
 		}
 	}
@@ -506,7 +506,7 @@ uint32_t update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGH
 		fills = 0;
 		for (int8_t x = 0; x < (int)BOARD_WIDTH; x++)
 		{
-			if (board[y][x])
+			if (tetris->board[y][x])
 				fills += 1;
 			else
 				break ;
@@ -517,12 +517,14 @@ uint32_t update_board(t_game *game, t_termino termino, uint8_t board[BOARD_HEIGH
 			for (int8_t yy = y; yy > 0; yy--)
 			{
 				for (int8_t x = 0; x < (int)BOARD_WIDTH; x++)
-					board[yy][x] = board[yy - 1][x];
+					tetris->board[yy][x] = tetris->board[yy - 1][x];
 			}
 			for (int8_t x = 0; x < (int)BOARD_WIDTH; x++)
-				board[0][x] = 0U;
+				tetris->board[0][x] = 0U;
 		}
 	}
+	tetris->lines += lines;
+	tetris->level = tetris->lines / 10;
 	return (score[lines]);
 }
 
@@ -544,8 +546,8 @@ void	init_termino(t_game *game, int player)
 	game->tetris[player].termino.rot = 0U;
 	if (!predrop_termino(game, &(game->tetris[player].termino), game->tetris[player].board))
 	{
-		game->running[player] = false;
-		update_board(game, game->tetris[player].termino, game->tetris[player].board);
+		game->tetris[player].running = false;
+		update_board(game, &(game->tetris[player]));
 	}
 	// printf("%i \n", game->tetris[player].termino.y);
 }
@@ -560,7 +562,7 @@ void update_game_1(t_game* game)
 	else
 	{
 		//write in board
-		game->tetris[PLAYER_1].score += update_board(game, game->tetris[PLAYER_1].termino, game->tetris[PLAYER_1].board);
+		game->tetris[PLAYER_1].score += update_board(game, &(game->tetris[PLAYER_1]));
 		//init new termino
 		init_termino(game, PLAYER_1);
 	}
@@ -575,7 +577,7 @@ void update_game_2(t_game* game)
 	else
 	{
 		//write in board
-		game->tetris[PLAYER_2].score += update_board(game, game->tetris[PLAYER_2].termino, game->tetris[PLAYER_2].board);
+		game->tetris[PLAYER_2].score += update_board(game, &(game->tetris[PLAYER_2]));
 		//init new termino
 		init_termino(game, PLAYER_2);
 	}

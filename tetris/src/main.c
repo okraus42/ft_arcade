@@ -15,9 +15,9 @@ int main(void)
 		current_time = SDL_GetTicks();
 		if (current_time - last_move_time >= STARTING_SPEED)  // 1000 ms = 1 second
 		{
-			if (game.running[PLAYER_1])
+			if (game.tetris[PLAYER_1].running)
 				update_game_1(&game); // Call your function
-			if (game.running[PLAYER_2])
+			if (game.tetris[PLAYER_2].running)
 				update_game_2(&game); // Call your function
 			last_move_time = current_time;
 		}
@@ -29,10 +29,10 @@ int main(void)
 		}
 		render(&game);
 		if (running)
-			running = game.running[PLAYER_1] || game.running[PLAYER_2];
+			running = game.tetris[PLAYER_1].running || game.tetris[PLAYER_2].running;
 		SDL_Delay(16); // ~60 FPS
 	}
-	printf("Player 1: %8u\nPlayer 2: %8u\n", game.tetris[PLAYER_1].score, game.tetris[PLAYER_2].score);
+	printf("Player 1: %8u %3u %4u\nPlayer 2: %8u %3u %4u\n", game.tetris[PLAYER_1].score, game.tetris[PLAYER_1].level, game.tetris[PLAYER_1].lines, game.tetris[PLAYER_2].score, game.tetris[PLAYER_2].level, game.tetris[PLAYER_2].lines);
 	cleanup(&game);
 	return 0;
 }
