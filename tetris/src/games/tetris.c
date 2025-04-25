@@ -573,7 +573,7 @@ uint32_t update_board(t_game *game, t_tetris *tetris)
 		}
 	}
 	tetris->lines += lines;
-	tetris->level = tetris->lines / 10;
+	tetris->level = tetris->lines / 2;
 	tetris->game_speed = tetris_frames_per_row[tetris->level];
 	return (score[lines]);
 }
