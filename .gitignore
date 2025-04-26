@@ -53,7 +53,7 @@ dkms.conf
 
 # other excludes
 snake
-tetris
+tetris/tetris
 ft_arcade
 SDL
 .vscode/settings.json
