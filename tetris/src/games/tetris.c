@@ -126,7 +126,7 @@ void handle_input(t_game* game, bool* running)
 				case SDLK_RIGHT:
 					game->tetris[PLAYER_2].key[KEY_RIGHT] = true;
 					break;
-				case SDLK_SPACE:
+				case SDLK_KP_0:
 					game->tetris[PLAYER_2].key[KEY_DROP] = true;
 					break;
 				case SDLK_W:
@@ -165,7 +165,7 @@ void handle_input(t_game* game, bool* running)
 				case SDLK_RIGHT:
 					game->tetris[PLAYER_2].key[KEY_RIGHT] = false;
 					break;
-				case SDLK_SPACE:
+				case SDLK_KP_0:
 					game->tetris[PLAYER_2].key[KEY_DROP] = false;
 					break;
 				case SDLK_W:

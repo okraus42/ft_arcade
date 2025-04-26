@@ -7,7 +7,7 @@
 # define DIGIT_WIDTH	 32U
 # define DIGIT_THICKNESS 4U
 
-#define SQUARE_SIZE	   50U //cellsize of snake will be one smaller, leaving one pixel gap
+#define SQUARE_SIZE	   32U //cellsize of snake will be one smaller, leaving one pixel gap
 #define STARTING_SPEED 500U
 #define INPUT_SPEED	   16U
 
