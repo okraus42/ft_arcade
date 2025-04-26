@@ -3,6 +3,10 @@
 
 #include <SDL3/SDL.h>
 
+# define DIGIT_HEIGHT	 64U
+# define DIGIT_WIDTH	 32U
+# define DIGIT_THICKNESS 4U
+
 #define SQUARE_SIZE	   50U //cellsize of snake will be one smaller, leaving one pixel gap
 #define STARTING_SPEED 500U
 #define INPUT_SPEED	   16U
@@ -145,6 +149,20 @@ typedef struct s_tetris
 	uint32_t  lines;
 }	t_tetris;
 
+//char
+typedef struct s_char
+{
+	uint8_t	 c;
+	uint32_t width;
+	uint32_t height;
+	uint32_t pos_x;
+	uint32_t pos_y;
+	uint32_t colour;
+	uint32_t background;
+	//font
+	//effect
+} t_char;
+
 typedef struct t_game
 {
 	uint32_t		fps;
@@ -162,6 +180,7 @@ typedef struct t_game
 	uint32_t	  offset_y1;
 	uint32_t	  offset_x1;
 	uint32_t*	  screen;
+	uint8_t		 digit[10][DIGIT_HEIGHT][DIGIT_WIDTH];
 	uint32_t		frame;
 } t_game;
 
@@ -173,5 +192,7 @@ void update_game_1(t_game* game);
 void update_game_2(t_game* game);
 void move_snake(t_game* game);
 void cleanup(t_game* game);
+void generateDigits(t_game *g);
+void	printScore(t_game *g);
 
 #endif

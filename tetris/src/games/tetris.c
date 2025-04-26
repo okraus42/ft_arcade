@@ -95,7 +95,7 @@ void init_game(t_game* game)
 	game->termino[TERMINO_Z][1] = 0x2640U;
 	game->termino[TERMINO_Z][2] = 0x0C60U;
 	game->termino[TERMINO_Z][3] = 0x2640U;
-
+	generateDigits(game);
 }
 
 void handle_input(t_game* game, bool* running)
@@ -454,6 +454,7 @@ void update_render(t_game* game)
 	//render boards
 	check_input(game);
 	render_terminoes(game);
+	printScore(game);
 	//render ghost?
 	//render menu?
 	//handle input
