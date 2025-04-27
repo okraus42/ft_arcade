@@ -27,7 +27,7 @@ static void printPlayerScore(t_game *g, unsigned int player, int start_x, int st
 	d.pos_y = start_y;
 
 	e = d;
-	e.colour = CLR_GRAY_2;
+	e.colour = CLR_GRAY_3;
 	e.c = 8;
 
 	int score = g->tetris[player].score;
@@ -43,7 +43,7 @@ static void printPlayerScore(t_game *g, unsigned int player, int start_x, int st
 	d.pos_y = start_y + 72;
 
 	e = d;
-	e.colour = CLR_GRAY_2;
+	e.colour = CLR_GRAY_3;
 	e.c = 8;
 	int level = g->tetris[player].level;
 	for (int i = 100; i >= 1; i /= 10)
@@ -58,7 +58,7 @@ static void printPlayerScore(t_game *g, unsigned int player, int start_x, int st
 	d.pos_y = start_y + 72 * 2;
 
 	e = d;
-	e.colour = CLR_GRAY_1;
+	e.colour = CLR_GRAY_3;
 	e.c = 8;
 	int lines = g->tetris[player].lines;
 	for (int i = 1000; i >= 1; i /= 10)
