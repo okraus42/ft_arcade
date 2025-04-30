@@ -466,7 +466,7 @@ void render(t_game* game)
 	SDL_RenderClear(game->renderer);
 	SDL_RenderTexture(game->renderer, game->texture, NULL, NULL);
 	SDL_RenderPresent(game->renderer);
-	printf("TERMINO_S colour set to 0x%08X\n", game->colours[TERMINO_S]);
+	// printf("TERMINO_S colour set to 0x%08X\n", game->colours[TERMINO_S]);
 }
 
 void cleanup(t_game* game)
