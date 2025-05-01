@@ -7,7 +7,7 @@
 # define DIGIT_WIDTH	 32U
 # define DIGIT_THICKNESS 4U
 
-#define SQUARE_SIZE	   32U //cellsize of snake will be one smaller, leaving one pixel gap
+#define SQUARE_SIZE	   32U
 #define STARTING_SPEED 500U
 #define INPUT_SPEED	   16U
 
@@ -18,12 +18,6 @@
 #define PLAYER_1 0U
 #define PLAYER_2 1U
 #define PLAYERS	 2U
-
-#define FOODS 800U
-
-#define SNAKE_1 1U
-#define SNAKE_2 2U
-#define FOOD	4U
 
 #define KEY_ROTATE 0U
 #define KEY_LEFT   1U
