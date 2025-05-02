@@ -13,7 +13,6 @@
 
 #define BOARD_WIDTH	  10U
 #define BOARD_HEIGHT  20U
-#define BOARD_PADDING 4U
 
 #define PLAYER_1 0U
 #define PLAYER_2 1U
