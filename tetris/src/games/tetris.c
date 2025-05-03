@@ -1,26 +1,29 @@
 #include "../include/defines.h"
-#include <time.h> //time for seed
 #include <stdio.h> //debug printf
 #include <stdlib.h>
 #include <strings.h>
+#include <time.h> //time for seed
 
-void shuffle_bag(uint8_t bag[7], uint32_t base_seed, uint32_t bag_number) {
-    // Create a deterministic seed for this specific bag
-    uint32_t seed = base_seed + bag_number;
-    srand(seed);  // Initialize the RNG with the combined seed
+void shuffle_bag(uint8_t bag[7], uint32_t base_seed, uint32_t bag_number)
+{
+	// Create a deterministic seed for this specific bag
+	uint32_t seed = base_seed + bag_number;
+	srand(seed); // Initialize the RNG with the combined seed
 
-    // Fill bag with pieces 1 to 7 (corresponding to TERMINO_I to TERMINO_Z)
-    for (uint8_t i = 0; i < 7; ++i) {
-        bag[i] = i + 1;
-    }
+	// Fill bag with pieces 1 to 7 (corresponding to TERMINO_I to TERMINO_Z)
+	for (uint8_t i = 0; i < 7; ++i)
+	{
+		bag[i] = i + 1;
+	}
 
-    // Fisher-Yates shuffle
-    for (uint8_t i = 6; i > 0; --i) {
-        uint8_t j = rand() % (i + 1);
-        uint8_t temp = bag[i];
-        bag[i] = bag[j];
-        bag[j] = temp;
-    }
+	// Fisher-Yates shuffle
+	for (uint8_t i = 6; i > 0; --i)
+	{
+		uint8_t j = rand() % (i + 1);
+		uint8_t temp = bag[i];
+		bag[i] = bag[j];
+		bag[j] = temp;
+	}
 }
 
 void init_game(t_game* game)
@@ -38,9 +41,8 @@ void init_game(t_game* game)
 	game->renderer = SDL_CreateRenderer(game->window, NULL);
 
 	game->screen = malloc(game->screen_w * game->screen_h * sizeof(uint32_t));
-	game->texture = SDL_CreateTexture(game->renderer,
-									  SDL_PIXELFORMAT_ARGB8888, //why?
-									  SDL_TEXTUREACCESS_STREAMING, game->screen_w, game->screen_h);
+	game->texture = SDL_CreateTexture(game->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+									  game->screen_w, game->screen_h);
 	game->offset_y0 = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
 	game->offset_x0 = (game->screen_w / 2 - 50 - BOARD_WIDTH * SQUARE_SIZE);
 	game->offset_y1 = (game->screen_h - BOARD_HEIGHT * SQUARE_SIZE) / 2;
@@ -202,7 +204,6 @@ void clear_screen(t_game* game)
 			game->screen[y * game->screen_w + x] = CLR_GRAY_2;
 		}
 	}
-	
 }
 
 void render_boards(t_game* game)
@@ -218,13 +219,12 @@ void render_boards(t_game* game)
 			{
 				for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
 				{
-					game->screen[(y * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
-						+ x * SQUARE_SIZE + game->offset_x0 + xx] = colour;
+					game->screen[(y * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w + x * SQUARE_SIZE +
+								 game->offset_x0 + xx] = colour;
 				}
 			}
 		}
 	}
-
 
 	for (uint32_t y = 0U; y < BOARD_HEIGHT; y++)
 	{
@@ -232,13 +232,13 @@ void render_boards(t_game* game)
 		{
 			uint32_t colour = 0xFF000000U;
 			if (game->tetris[PLAYER_2].board[y][x])
-			colour = game->colours[game->tetris[PLAYER_2].board[y][x]];
+				colour = game->colours[game->tetris[PLAYER_2].board[y][x]];
 			for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
 			{
 				for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
 				{
-					game->screen[(y * SQUARE_SIZE + game->offset_y1 + yy) * game->screen_w
-						+ x * SQUARE_SIZE + game->offset_x1 + xx] = colour;
+					game->screen[(y * SQUARE_SIZE + game->offset_y1 + yy) * game->screen_w + x * SQUARE_SIZE +
+								 game->offset_x1 + xx] = colour;
 				}
 			}
 		}
@@ -252,7 +252,9 @@ void render_terminoes(t_game* game)
 		for (uint32_t x = 0U; x < 4; x++)
 		{
 			uint32_t colour = game->colours[game->tetris[PLAYER_1].termino.type];
-			if ((game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot] >> (y * 4 + x)) & 1)
+			if ((game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot] >>
+				 (y * 4 + x)) &
+				1)
 			{
 				// printf("here %u %u\n",y, x);
 				for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
@@ -260,12 +262,16 @@ void render_terminoes(t_game* game)
 					for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
 					{
 						if (yy == 0 || xx == 0)
-							game->screen[((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
-								+ (game->tetris[PLAYER_1].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = 0xFF111111U;
-							// printf("yx %u %u\n",((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[PLAYER_1].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
+							game->screen[((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) *
+											 game->screen_w +
+										 (game->tetris[PLAYER_1].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] =
+								0xFF111111U;
+						// printf("yx %u %u\n",((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[PLAYER_1].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
 						else
-							game->screen[((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) * game->screen_w
-								+ (game->tetris[PLAYER_1].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] = colour;
+							game->screen[((game->tetris[PLAYER_1].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy) *
+											 game->screen_w +
+										 (game->tetris[PLAYER_1].termino.x + x) * SQUARE_SIZE + game->offset_x0 + xx] =
+								colour;
 					}
 				}
 			}
@@ -276,7 +282,9 @@ void render_terminoes(t_game* game)
 		for (uint32_t x = 0U; x < 4; x++)
 		{
 			uint32_t colour = game->colours[game->tetris[PLAYER_2].termino.type];
-			if ((game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot] >> (y * 4 + x)) & 1)
+			if ((game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot] >>
+				 (y * 4 + x)) &
+				1)
 			{
 				// printf("here %u %u\n",y, x);
 				for (uint32_t yy = 0U; yy < SQUARE_SIZE; yy++)
@@ -284,12 +292,16 @@ void render_terminoes(t_game* game)
 					for (uint32_t xx = 0U; xx < SQUARE_SIZE; xx++)
 					{
 						if (yy == 0 || xx == 0)
-							game->screen[((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y1 + yy) * game->screen_w
-								+ (game->tetris[PLAYER_2].termino.x + x) * SQUARE_SIZE + game->offset_x1 + xx] = 0xFF111111U;
-							// printf("yx %u %u\n",((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[PLAYER_2].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
+							game->screen[((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y1 + yy) *
+											 game->screen_w +
+										 (game->tetris[PLAYER_2].termino.x + x) * SQUARE_SIZE + game->offset_x1 + xx] =
+								0xFF111111U;
+						// printf("yx %u %u\n",((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y0 + yy), (game->tetris[PLAYER_2].termino.x +x) * SQUARE_SIZE + game->offset_x0 + xx);
 						else
-							game->screen[((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y1 + yy) * game->screen_w
-								+ (game->tetris[PLAYER_2].termino.x + x) * SQUARE_SIZE + game->offset_x1 + xx] = colour;
+							game->screen[((game->tetris[PLAYER_2].termino.y + y) * SQUARE_SIZE + game->offset_y1 + yy) *
+											 game->screen_w +
+										 (game->tetris[PLAYER_2].termino.x + x) * SQUARE_SIZE + game->offset_x1 + xx] =
+								colour;
 					}
 				}
 			}
@@ -297,7 +309,7 @@ void render_terminoes(t_game* game)
 	}
 }
 
-bool	is_move_valid(uint16_t termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH], int8_t x, int8_t y)
+bool is_move_valid(uint16_t termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH], int8_t x, int8_t y)
 {
 	for (int8_t yy = 0; yy < 4; yy++)
 	{
@@ -318,9 +330,9 @@ bool	is_move_valid(uint16_t termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH], i
 	return (true);
 }
 
-bool	predrop_termino(t_game *game, t_termino *termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
+bool predrop_termino(t_game* game, t_termino* termino, uint8_t board[BOARD_HEIGHT][BOARD_WIDTH])
 {
-	bool	has_dropped = false;
+	bool has_dropped = false;
 	while (!has_dropped)
 	{
 		termino->y += 1;
@@ -347,14 +359,15 @@ bool	predrop_termino(t_game *game, t_termino *termino, uint8_t board[BOARD_HEIGH
 
 // check if possible to move
 
-void	check_input(t_game *game)
+void check_input(t_game* game)
 {
 	if (game->tetris[PLAYER_1].running == true)
 	{
 		if (game->tetris[PLAYER_1].key[KEY_ROTATE])
 		{
-			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][(game->tetris[PLAYER_1].termino.rot + 1) % 4],
-				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y))
+			if (is_move_valid(
+					game->termino[game->tetris[PLAYER_1].termino.type][(game->tetris[PLAYER_1].termino.rot + 1) % 4],
+					game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y))
 			{
 				game->tetris[PLAYER_1].termino.rot += 1U;
 				game->tetris[PLAYER_1].key[KEY_ROTATE] = false;
@@ -363,7 +376,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_1].key[KEY_DOWN])
 		{
 			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
+							  game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x,
+							  game->tetris[PLAYER_1].termino.y + 1))
 			{
 				game->tetris[PLAYER_1].key[KEY_DOWN] = false;
 				game->tetris[PLAYER_1].termino.y += 1;
@@ -372,7 +386,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_1].key[KEY_LEFT])
 		{
 			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x - 1, game->tetris[PLAYER_1].termino.y))
+							  game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x - 1,
+							  game->tetris[PLAYER_1].termino.y))
 			{
 				game->tetris[PLAYER_1].key[KEY_LEFT] = false;
 				game->tetris[PLAYER_1].termino.x -= 1;
@@ -381,7 +396,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_1].key[KEY_RIGHT])
 		{
 			if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x + 1, game->tetris[PLAYER_1].termino.y))
+							  game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x + 1,
+							  game->tetris[PLAYER_1].termino.y))
 			{
 				game->tetris[PLAYER_1].key[KEY_RIGHT] = false;
 				game->tetris[PLAYER_1].termino.x += 1;
@@ -390,7 +406,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_1].key[KEY_DROP])
 		{
 			while (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-				game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
+								 game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x,
+								 game->tetris[PLAYER_1].termino.y + 1))
 			{
 				game->tetris[PLAYER_1].termino.y += 1;
 			}
@@ -401,8 +418,9 @@ void	check_input(t_game *game)
 	{
 		if (game->tetris[PLAYER_2].key[KEY_ROTATE])
 		{
-			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][(game->tetris[PLAYER_2].termino.rot + 1) % 4],
-				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y))
+			if (is_move_valid(
+					game->termino[game->tetris[PLAYER_2].termino.type][(game->tetris[PLAYER_2].termino.rot + 1) % 4],
+					game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y))
 			{
 				game->tetris[PLAYER_2].termino.rot += 1U;
 				game->tetris[PLAYER_2].key[KEY_ROTATE] = false;
@@ -411,7 +429,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_2].key[KEY_DOWN])
 		{
 			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
-				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y + 1))
+							  game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x,
+							  game->tetris[PLAYER_2].termino.y + 1))
 			{
 				game->tetris[PLAYER_2].key[KEY_DOWN] = false;
 				game->tetris[PLAYER_2].termino.y += 1;
@@ -420,7 +439,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_2].key[KEY_LEFT])
 		{
 			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
-				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x - 1, game->tetris[PLAYER_2].termino.y))
+							  game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x - 1,
+							  game->tetris[PLAYER_2].termino.y))
 			{
 				game->tetris[PLAYER_2].key[KEY_LEFT] = false;
 				game->tetris[PLAYER_2].termino.x -= 1;
@@ -429,7 +449,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_2].key[KEY_RIGHT])
 		{
 			if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
-				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x + 1, game->tetris[PLAYER_2].termino.y))
+							  game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x + 1,
+							  game->tetris[PLAYER_2].termino.y))
 			{
 				game->tetris[PLAYER_2].key[KEY_RIGHT] = false;
 				game->tetris[PLAYER_2].termino.x += 1;
@@ -438,7 +459,8 @@ void	check_input(t_game *game)
 		if (game->tetris[PLAYER_2].key[KEY_DROP])
 		{
 			while (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
-				game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y + 1))
+								 game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x,
+								 game->tetris[PLAYER_2].termino.y + 1))
 			{
 				game->tetris[PLAYER_2].termino.y += 1;
 			}
@@ -489,55 +511,32 @@ void cleanup(t_game* game)
 	SDL_Quit();
 }
 
-uint32_t update_board(t_game *game, t_tetris *tetris)
+uint32_t update_board(t_game* game, t_tetris* tetris)
 {
 	const static uint8_t tetris_frames_per_row[256] = {
 		// Levels 0–9 (custom NES-style)
 		20, 18, 16, 14, 12, 10, 8, 7, 6, 6,
-	
+
 		// Levels 10–15 → 5
 		5, 5, 5, 5, 5, 5,
-	
+
 		// Levels 16–31 → 4
-		4, 4, 4, 4, 4, 4, 4, 4,
-		4, 4, 4, 4, 4, 4, 4, 4,
-	
+		4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+
 		// Levels 32–63 → 3
-		3, 3, 3, 3, 3, 3, 3, 3,
-		3, 3, 3, 3, 3, 3, 3, 3,
-		3, 3, 3, 3, 3, 3, 3, 3,
-		3, 3, 3, 3, 3, 3, 3, 3,
-	
+		3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+
 		// Levels 64–127 → 2
-		2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2,
-		2, 2, 2, 2, 2, 2, 2, 2,
-	
+		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+
 		// Levels 128–255 → 1
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1, 1, 1
-	};
-	uint8_t fills;
-	uint8_t	lines = 0;
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+	uint8_t				  fills;
+	uint8_t				  lines = 0;
 	static const uint32_t score[5] = {0, 100, 300, 800, 2000};
 
 	for (int8_t y = 0; y < 4; y++)
@@ -560,7 +559,7 @@ uint32_t update_board(t_game *game, t_tetris *tetris)
 			if (tetris->board[y][x])
 				fills += 1;
 			else
-				break ;
+				break;
 		}
 		if (fills == BOARD_WIDTH)
 		{
@@ -580,9 +579,8 @@ uint32_t update_board(t_game *game, t_tetris *tetris)
 	return (score[lines]);
 }
 
-
 //handle game over here
-void	init_termino(t_game *game, int player)
+void init_termino(t_game* game, int player)
 {
 	game->tetris[player].next_termino_from_bag += 1;
 	if (game->tetris[player].next_termino_from_bag == 7)
@@ -604,12 +602,12 @@ void	init_termino(t_game *game, int player)
 	// printf("%i \n", game->tetris[player].termino.y);
 }
 
-
 void update_game_1(t_game* game)
 {
 	/*update game logic here*/
 	if (is_move_valid(game->termino[game->tetris[PLAYER_1].termino.type][game->tetris[PLAYER_1].termino.rot],
-		game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x, game->tetris[PLAYER_1].termino.y + 1))
+					  game->tetris[PLAYER_1].board, game->tetris[PLAYER_1].termino.x,
+					  game->tetris[PLAYER_1].termino.y + 1))
 		game->tetris[PLAYER_1].termino.y += 1;
 	else
 	{
@@ -625,7 +623,8 @@ void update_game_2(t_game* game)
 {
 	/*update game logic here*/
 	if (is_move_valid(game->termino[game->tetris[PLAYER_2].termino.type][game->tetris[PLAYER_2].termino.rot],
-		game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x, game->tetris[PLAYER_2].termino.y + 1))
+					  game->tetris[PLAYER_2].board, game->tetris[PLAYER_2].termino.x,
+					  game->tetris[PLAYER_2].termino.y + 1))
 		game->tetris[PLAYER_2].termino.y += 1;
 	else
 	{
