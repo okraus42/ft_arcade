@@ -14,26 +14,35 @@
 #define BOARD_WIDTH	  10U
 #define BOARD_HEIGHT  20U
 
-#define PLAYER_1 0U
-#define PLAYER_2 1U
-#define PLAYERS	 2U
+// Enum for Player IDs
+enum Player {
+    PLAYER_1 = 0U,
+    PLAYER_2 = 1U,
+    PLAYERS  = 2U
+};
 
-#define KEY_ROTATE 0U
-#define KEY_LEFT   1U
-#define KEY_RIGHT  2U
-#define KEY_DOWN   3U
-#define KEY_DROP   4U
-#define KEYS	   5U
+// Enum for Key IDs
+enum Key {
+    KEY_ROTATE = 0U,
+    KEY_LEFT   = 1U,
+    KEY_RIGHT  = 2U,
+    KEY_DOWN   = 3U,
+    KEY_DROP   = 4U,
+    KEYS       = 5U
+};
 
-#define TERMINO_I	  0x01U
-#define TERMINO_T	  0x02U
-#define TERMINO_O	  0x03U
-#define TERMINO_J	  0x04U
-#define TERMINO_L	  0x05U
-#define TERMINO_S	  0x06U
-#define TERMINO_Z	  0x07U
-#define TERMINO_BONUS 0x08U //fallen
-#define TERMINO_ANY	  0xFFU
+// Enum for Tetrimino types
+enum Tetrimino {
+    TERMINO_I    = 0x01U,
+    TERMINO_T    = 0x02U,
+    TERMINO_O    = 0x03U,
+    TERMINO_J    = 0x04U,
+    TERMINO_L    = 0x05U,
+    TERMINO_S    = 0x06U,
+    TERMINO_Z    = 0x07U,
+    TERMINO_BONUS = 0x08U, // fallen
+    TERMINO_ANY  = 0xFFU
+};
 
 #define CLR_BLACK 0xFF000000U
 #define CLR_WHITE 0xFFFFFFFFU
