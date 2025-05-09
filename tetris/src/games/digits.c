@@ -1,6 +1,5 @@
 #include "defines.h"
 
-
 //use t_char
 static void printDigit(t_game* g, t_char d)
 {
@@ -16,7 +15,7 @@ static void printDigit(t_game* g, t_char d)
 	}
 }
 
-static void printPlayerScore(t_game *g, unsigned int player, int start_x, int start_y)
+static void printPlayerScore(t_game* g, unsigned int player, int start_x, int start_y)
 {
 	t_char d;
 	t_char e;
@@ -71,7 +70,7 @@ static void printPlayerScore(t_game *g, unsigned int player, int start_x, int st
 	}
 }
 
-void printScore(t_game *g)
+void printScore(t_game* g)
 {
 	printPlayerScore(g, PLAYER_1, g->offset_x0 - 256, g->offset_y0);
 	printPlayerScore(g, PLAYER_2, g->offset_x1 + 96 + BOARD_WIDTH * SQUARE_SIZE, g->offset_y1);
@@ -88,8 +87,7 @@ static void drawHorizontalSegment(uint8_t digit[DIGIT_HEIGHT][DIGIT_WIDTH], uint
 	}
 }
 
-static void drawVerticalSegment(uint8_t digit[DIGIT_HEIGHT][DIGIT_WIDTH], uint8_t x,
-								uint8_t yStart, uint8_t yEnd)
+static void drawVerticalSegment(uint8_t digit[DIGIT_HEIGHT][DIGIT_WIDTH], uint8_t x, uint8_t yStart, uint8_t yEnd)
 {
 	for (uint8_t i = 0; i < DIGIT_THICKNESS; i++)
 	{
@@ -100,9 +98,9 @@ static void drawVerticalSegment(uint8_t digit[DIGIT_HEIGHT][DIGIT_WIDTH], uint8_
 	}
 }
 
-void generateDigits(t_game *g)
+void generateDigits(t_game* g)
 {
-	uint8_t	num = 0;
+	uint8_t num = 0;
 
 	while (num < 10)
 	{
