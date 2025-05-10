@@ -13,10 +13,10 @@ int main(void)
 		current_time = SDL_GetTicks();
 		(void)current_time;
 		if (game.tetris[PLAYER_1].running && game.frame >= game.tetris[PLAYER_1].next_move)
-			update_game_1(&game); // Call your function
+			update_game_1(&game);
 		if (game.tetris[PLAYER_2].running && game.frame >= game.tetris[PLAYER_2].next_move)
-			update_game_2(&game); // Call your function
-		update_render(&game);	  // Call your function
+			update_game_2(&game);
+		update_render(&game);
 		render(&game);
 		if (running)
 			running = game.tetris[PLAYER_1].running || game.tetris[PLAYER_2].running;
