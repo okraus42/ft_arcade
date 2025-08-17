@@ -1,0 +1,1 @@
+#define SNAKE_MIN_LENGTH 3
