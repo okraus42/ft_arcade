@@ -67,8 +67,12 @@ int main()
 	while (1)
 	{
 		fd_set read_fds = master_set;
+		struct timeval tv;
+		tv.tv_sec = 0;      // seconds
+		tv.tv_usec = 100000; // microseconds (0.1s)
 
-		if (select(max_sd + 1, &read_fds, NULL, NULL, NULL) < 0)
+		int ret = select(max_sd + 1, &read_fds, NULL, NULL, &tv);
+		if (ret < 0)
 		{
 			if (errno == EINTR)
 				continue; // signal interrupted

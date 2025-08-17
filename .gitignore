@@ -58,3 +58,5 @@ ft_arcade
 SDL
 .vscode/settings.json
 .vscode
+terminal_snake/snake_server
+terminal_snake/snake_client

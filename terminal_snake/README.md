@@ -30,3 +30,14 @@ client draws
 client receives request
 client sends data
 client receives state
+
+
+PLAN
+1) game 
+-  solo on server
+-  1v1 on server
+-  group on server
+2) tournament system
+3) scoreboard
+4) stats
+5) game chat
