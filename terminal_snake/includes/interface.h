@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#define SNAKE_MIN_LENGTH 3
+
 #define GAME_WIDTH	16U
 #define GAME_HEIGHT 16U
 
@@ -16,7 +18,8 @@ typedef enum
 	GM_WAIT4,
 	GM_FINALS,
 	GM_WAIT5,
-	GM_RESULTS
+	GM_RESULTS,
+	GM_SIZE
 } t_game_mode;
 
 typedef enum

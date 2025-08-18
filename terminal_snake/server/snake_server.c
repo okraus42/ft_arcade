@@ -8,9 +8,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#define PORT		12345
-#define MAX_CLIENTS 10
-#define BUFFER_SIZE 1024
+#include "interface.h"
+
+#include "snake_server.h"
 
 int	   server_fd;
 fd_set master_set;
@@ -133,3 +133,4 @@ int main()
 // 10 minute qualification to get best score
 // 10 minutes best 16 1v1 (8, 4)
 // 10 minutes top 8 (4, 2)
+
