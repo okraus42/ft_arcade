@@ -1,9 +1,13 @@
-#include <stdint.h>
+#ifndef INTERFACE_H
+# define INTERFACE_H
+# pragma once
 
-#define SNAKE_MIN_LENGTH 3
+# include <stdint.h>
 
-#define GAME_WIDTH	16U
-#define GAME_HEIGHT 16U
+# define SNAKE_MIN_LENGTH 3
+
+# define GAME_WIDTH	 16U
+# define GAME_HEIGHT 16U
 
 typedef enum
 {
@@ -42,32 +46,55 @@ typedef enum
 	MAP_SNAKE7_FOOD = 0x4000U,
 	MAP_SNAKE8_FOOD = 0x8000U,
 	MAP_FOOD = 0xFF00U,
-} t_game_mode;
+} t_cells;
+
+typedef union
+{
+	struct
+	{
+		uint8_t	 dir : 2;
+		uint8_t	 connected_server : 1;
+		uint8_t	 connected_client : 1;
+		uint8_t	 speed : 2;	 //boost, normal, slow
+		uint8_t	 unused : 2; // respawn blinking
+	};
+	uint8_t data;
+} t_packet;
 
 typedef struct
 {
-	uint8_t		head;
-	uint8_t		length;
-	uint8_t		dir : 2;
-	uint8_t		connected_server : 1;
-	uint8_t		connected_client : 1;
-	uint8_t		speed : 2; //boost, normal, slow
-	uint8_t		unused : 2; // respawn blinking
-	uint8_t		next_poop;
-	char		name[9];
-	char		host[7];
-	uint32_t	score;
+	uint8_t	 head;
+	uint8_t	 length;
+	uint8_t	 next_poop;
+	t_packet status;
+	uint32_t score;
+	char	 name[9];
+	char	 host[7];
 } t_snake;
 
 typedef struct
 {
-	uint16_t	map[GAME_WIDTH * GAME_HEIGHT];
-	t_snake		players[8];
-	uint32_t	time_left;
-	uint32_t	tick;
-	uint8_t		game_mode;
-	uint8_t		game_speed;
+	uint16_t map[GAME_WIDTH * GAME_HEIGHT];
+	t_snake	 players[8];
+	uint32_t start_time; // maybe?
+	uint32_t current_time; // maybe?
+	uint32_t time_left;
+	uint32_t tick;
+	uint8_t	 game_mode;
+	uint8_t	 game_speed;
 } t_game;
+
+typedef enum
+{
+	NOLOG,
+	ERROR,
+	WARNING,
+	INFO,
+	DEBUG1,
+	DEBUG2,
+	DEBUG3,
+	LOG_LEVELS
+} t_log_level;
 
 //map 0 empty space
 // dead snake -> food
@@ -78,3 +105,4 @@ typedef struct
 // collision 2 moves snake poops
 // boost + collision snake poops every move
 
+#endif /*INTERFACE_H*/

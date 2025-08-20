@@ -134,3 +134,14 @@ int main()
 // 10 minutes best 16 1v1 (8, 4)
 // 10 minutes top 8 (4, 2)
 
+//read fds
+//write fds
+
+//see if I can send message every 0.1 second or less
+
+//have a 5 minute game to get maximum xp
+//show results at the end
+
+// add naboo and alderaan info
+
+//final between best player of naboo and alderaan

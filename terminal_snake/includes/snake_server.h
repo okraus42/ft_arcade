@@ -1,3 +1,8 @@
+#ifndef SNAKE_SERVER_H
+# define SNAKE_SERVER_H
+# pragma once
+
+
 #include "interface.h"
 
 #include <stdint.h>
@@ -11,3 +16,5 @@ typedef struct
 	uint64_t	game_modes[GM_SIZE];
 	t_game		g;
 } t_server;
+
+#endif /*SNAKE_SERVER_H*/

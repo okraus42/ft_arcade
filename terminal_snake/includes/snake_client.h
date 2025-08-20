@@ -1,3 +1,7 @@
+#ifndef SNAKE_CLIENT_H
+# define SNAKE_CLIENT_H
+# pragma once
+
 #define FOOD_COLOR   "\033[38;5;231m"
 #define SNAKE1_COLOR "\033[38;5;33m"
 #define SNAKE2_COLOR "\033[38;5;28m"
@@ -14,3 +18,4 @@
 #define SNAKE_TAIL   "▒▒"
 #define FOOD         "░░"
 
+#endif /*SNAKE_CLIENT_H*/

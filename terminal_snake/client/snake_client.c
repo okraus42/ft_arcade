@@ -37,6 +37,10 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "interface.h"
+
+#include "snake_client.h"
+
 #define SERVER_IP	"127.0.0.1"
 #define SERVER_PORT 12345
 #define BUFFER_SIZE 1024
@@ -91,6 +95,11 @@ int main()
 }
 
 //add magic handshake and verification
+// countdown to start the game
+// when gamem mode is game display game
+// show results at the end.
+
+
 
 /******************************************************************************/
 /*                                                                            */
