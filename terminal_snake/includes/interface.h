@@ -82,19 +82,27 @@ typedef struct
 	uint32_t tick;
 	uint8_t	 game_mode;
 	uint8_t	 game_speed;
+	char	 broadcast[256];
 } t_game;
 
 typedef enum
 {
 	NOLOG,
+	FATAL,
 	ERROR,
 	WARNING,
+	NOTICE,
 	INFO,
+	SUCCESS,
+	TRACE,
 	DEBUG1,
 	DEBUG2,
 	DEBUG3,
+	DEBUG4,
 	LOG_LEVELS
 } t_log_level;
+
+
 
 //map 0 empty space
 // dead snake -> food

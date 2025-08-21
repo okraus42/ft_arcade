@@ -95,7 +95,7 @@ int main()
 }
 
 //add magic handshake and verification
-// countdown to start the game
+// countdown to start the game (advice user to make terminal window bigger)
 // when gamem mode is game display game
 // show results at the end.
 

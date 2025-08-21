@@ -2,7 +2,10 @@ Language: Cpp
 IndentWidth: 4
 TabWidth: 4
 UseTab: Always
-ColumnLimit: 120
+BinPackParameters: false
+BinPackArguments: false
+BinPackInitializers: false
+ColumnLimit: 80
 BreakBeforeBraces: Allman
 BraceWrapping:
   AfterClass: true

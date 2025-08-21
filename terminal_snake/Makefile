@@ -21,8 +21,10 @@ OBJ_DIR			:= obj
 # -----------------------------------------------------------------------------#
 
 # Source files for server and client
-SERVER_SRCS		:= $(SERVER_SRC_DIR)/snake_server.c
-CLIENT_SRCS		:= $(CLIENT_SRC_DIR)/snake_client.c
+SERVER_SRCS		:=	$(SERVER_SRC_DIR)/snake_server.c \
+					$(SERVER_SRC_DIR)/logger.c \
+					$(SERVER_SRC_DIR)/timer.c
+CLIENT_SRCS		:=	$(CLIENT_SRC_DIR)/snake_client.c
 
 # -----------------------------------------------------------------------------#
 # Objects                                                                      #
