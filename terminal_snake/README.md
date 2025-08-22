@@ -43,14 +43,15 @@ PLAN
 5) game chat
 
 Friday
+
+Saturday
+- handshake
+- register user
 - client waiting window
 - client game window (before player can move)
-- register user
 - refuse if the same name exists and is active -> spectator status
 // unsigned long union with char 8 - check names
 // coalitions naboo, alderaan, mandalore, tatooine, other
-
-Saturday
 - solo game
 
 Sunday
