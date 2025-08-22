@@ -17,7 +17,9 @@ typedef struct
 {
 	uint16_t	sd;
 	uint16_t	port;
-	uint8_t		game_id;
+	uint8_t		game_id:7;
+	uint8_t		sending:1;
+	t_packet	last_data;
 } t_connection;
 
 typedef struct

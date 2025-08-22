@@ -45,7 +45,7 @@ int main()
 	// Create socket
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
-		perror("socket");
+		logger(ERROR, "socker error", __FILE__, __LINE__);
 		exit(EXIT_FAILURE);
 	}
 	logger(INFO, "socker created", __FILE__, __LINE__);
@@ -59,13 +59,13 @@ int main()
 	if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) <
 		0)
 	{
-		perror("bind");
+		logger(ERROR, "bind error", __FILE__, __LINE__);
 		exit(EXIT_FAILURE);
 	}
 	logger(NOTICE, "bind created", __FILE__, __LINE__);
 	if (listen(server_fd, 5) < 0)
 	{
-		perror("listen");
+		logger(ERROR, "listen error", __FILE__, __LINE__);
 		exit(EXIT_FAILURE);
 	}
 	logger(INFO, "listen passed", __FILE__, __LINE__);
@@ -104,7 +104,7 @@ int main()
 		{
 			if (errno == EINTR)
 				continue; // signal interrupted
-			perror("select");
+			logger(ERROR, "select failure", __FILE__, __LINE__);
 			exit(EXIT_FAILURE);
 		}
 
@@ -119,7 +119,7 @@ int main()
 						server_fd, (struct sockaddr*)&client_addr, &addr_len);
 					if (new_socket < 0)
 					{
-						perror("accept");
+						logger(ERROR, "accept failure", __FILE__, __LINE__);
 						continue;
 					}
 
