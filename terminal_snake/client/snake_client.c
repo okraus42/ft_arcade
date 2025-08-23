@@ -29,6 +29,7 @@ int main(void)
 	ssize_t			   write_len = 0;
 	char				name[9] = {0};
 	char				host[7] = {0};
+	t_game				g;
 	
 	char hostname[256];
 	const char *username = getenv("USER");
@@ -171,6 +172,7 @@ int main(void)
 				// game
 				// score
 				logger(INFO, "Not implemented", __FILE__, __LINE__);
+				write_len = 0;
 			}
 
 			// ssize_t s = send(sock, write_buf, write_len, 0);
@@ -236,9 +238,28 @@ int main(void)
 				else
 					logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
 			}
+			else if (verified == REGISTERED)
+			{
+				ssize_t n = recv(sock, &g, sizeof(g), 0);
+				if (n == sizeof(g))
+				{
+					logger(INFO, "received struct", __FILE__, __LINE__);
+					printf("time left: %li\n", g.time_left);
+				}
+				else if (n <= 0)
+				{
+					logger(NOTICE, "Server closed connection during read", __FILE__, __LINE__);
+					close(sock);
+					break ;
+				}
+				else
+				{
+					logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
+				}
+			}
 			else
 			{
-				logger(INFO, "Not implemented", __FILE__, __LINE__);
+				logger(INFO, "Not here", __FILE__, __LINE__);
 			}
 		}
 	}

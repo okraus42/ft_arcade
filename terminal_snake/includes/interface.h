@@ -1,13 +1,18 @@
 #ifndef INTERFACE_H
-# define INTERFACE_H
-# pragma once
+#define INTERFACE_H
+#pragma once
 
-# include <stdint.h>
+#include <stdint.h>
 
-# define SNAKE_MIN_LENGTH 3
+#define SNAKE_MIN_LENGTH 3
 
-# define GAME_WIDTH	 16U
-# define GAME_HEIGHT 16U
+#define GAME_WIDTH	16U
+#define GAME_HEIGHT 16U
+
+#define WAIT_TIME_IN_SECONDS 15U
+#define MS_IN_SECOND		 1000U
+#define GAME_TIME_IN_SECONDS 15U //285
+#define GAME_TICK 500U //285
 
 typedef enum
 {
@@ -52,17 +57,21 @@ typedef union
 {
 	struct
 	{
-		uint8_t	 dir : 2;
-		uint8_t	 connected_server : 1;
-		uint8_t	 connected_client : 1;
-		uint8_t	 speed : 2;	 //boost, normal, slow
-		uint8_t	 unused : 2; // respawn blinking
+		uint8_t dir : 2;
+		uint8_t connected_server : 1;
+		uint8_t connected_client : 1;
+		uint8_t speed : 2;	//boost, normal, slow
+		uint8_t unused : 2; // respawn blinking
 	};
 	uint8_t data;
 } t_packet;
 
 typedef struct
 {
+	uint16_t sd;
+	uint16_t port;
+	uint32_t ip;
+	uint8_t	 segments[GAME_WIDTH * GAME_HEIGHT];
 	uint8_t	 head;
 	uint8_t	 length;
 	uint8_t	 next_poop;
@@ -70,16 +79,25 @@ typedef struct
 	uint32_t score;
 	char	 name[9];
 	char	 host[7];
+	uint8_t	 game_id : 7; //0 for spectators
+	uint8_t	 sending : 1;
+	t_packet last_data;
+	uint8_t	 ping_pong[4];
+	uint8_t	 verification;
+	uint64_t last_server_activity;
+	uint64_t last_client_activity;
 } t_snake;
 
 typedef struct
 {
 	uint16_t map[GAME_WIDTH * GAME_HEIGHT];
-	t_snake	 players[8];
-	uint32_t start_time; // maybe?
-	uint32_t current_time; // maybe?
-	uint32_t time_left;
-	uint32_t tick;
+	t_snake	 player[8];
+	uint8_t	 players;
+	uint64_t start_time;   // maybe?
+	uint64_t end_time;	   // maybe?
+	uint64_t current_time; // maybe?
+	uint64_t time_left;
+	uint64_t tick;
 	uint8_t	 game_mode;
 	uint8_t	 game_speed;
 	char	 broadcast[256];
@@ -104,16 +122,14 @@ typedef enum
 
 typedef enum
 {
-	NOT_VERIFIED, // just connected
-	SERVER_PING, //42
+	NOT_VERIFIED,		// just connected
+	SERVER_PING,		//42
 	CLIENT_SENT_SECRET, //~42 + random
-	SERVER_PONG, // ~random + 42
+	SERVER_PONG,		// ~random + 42
 	VERIFIED,
 	REGISTERED,
 	VERIFICATION_LEVELS
 } t_verification;
-
-
 
 //map 0 empty space
 // dead snake -> food

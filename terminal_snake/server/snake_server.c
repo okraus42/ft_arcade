@@ -39,7 +39,15 @@ int main(void)
 	t_server	s;
 	signal(SIGINT, shutdown_server);
 	memset(&s, 0, sizeof(s));
-	s.current_time = elapsed_ms(1);
+	s.start_time = elapsed_ms(1);
+	s.end_time = elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
+	s.current_time = elapsed_ms(0);
+	s.game_mode = GM_REGISTRATION;
+	// uint64_t start_time;   // maybe?
+	// uint64_t end_time;	   // maybe?
+	// uint64_t current_time; // maybe?
+	// uint64_t time_left;
+
 
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t		   addr_len = sizeof(client_addr);
@@ -84,12 +92,30 @@ int main(void)
 	while (1)
 	{
 		s.current_time = elapsed_ms(1);
+		if (s.end_time < s.current_time)
+		{
+			logger(NOTICE, "TIME OFF", __FILE__, __LINE__);
+			break ;
+		}
+		s.time_left = s.end_time - s.current_time;
 		FD_ZERO(&read_fds);
 		FD_ZERO(&write_fds);
 
 		FD_SET(server_fd, &read_fds); 
 		max_sd = server_fd; 
 
+		for (int i = 0; i < MAX_CLIENTS; ++i)
+		{
+			if (s.users[i].verification < REGISTERED)
+				continue ;
+			if (s.current_time - s.users[i].last_server_activity > GAME_TICK)
+			{
+				s.users[i].last_server_activity = s.current_time;
+				s.users[i].sending = 1;
+				s.g[s.users[i].game_id].time_left = s.time_left;
+				s.g[s.users[i].game_id].game_mode = s.game_mode;
+			}
+		}
 
 		for (int i = 0; i < MAX_CLIENTS; ++i)
 		{
@@ -224,6 +250,7 @@ int main(void)
 							printf("%s %s\n", s.users[i].name, s.users[i].host);
 							logger(INFO, "Client sent name and host", __FILE__, __LINE__);
 							s.users[i].verification = REGISTERED;
+							s.users[i].game_id = i;
 						}
 						else if (n > 16)
 						{
@@ -285,7 +312,23 @@ int main(void)
 				}
 				else
 				{
-					logger(NOTICE, "Client verified, nothing to send", __FILE__, __LINE__);
+					logger(TRACE, "Sending", __FILE__, __LINE__);
+					ssize_t n = send(sd , &(s.g[s.users[i].game_id]), sizeof(t_game), MSG_NOSIGNAL);
+					if (n <= 0) 
+					{
+						close(sd);
+						s.users[i].sd = 0;
+						logger(WARNING, "Client disconnected during send", __FILE__, __LINE__);
+					}
+					else
+					{
+						if (n == sizeof(t_game))
+						{
+							s.users[i].sending = 0;
+						}
+						else
+							logger(NOTICE, "Partial send, retrying", __FILE__, __LINE__);
+					}
 				}
 			}
 		}

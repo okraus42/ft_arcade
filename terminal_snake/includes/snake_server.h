@@ -15,26 +15,16 @@
 
 typedef struct
 {
-	uint16_t sd;
-	uint16_t port;
-	uint32_t ip;
-	char	 name[9];
-	char	 host[7];
-	uint8_t	 game_id : 7;
-	uint8_t	 sending : 1;
-	t_packet last_data;
-	uint8_t	 ping_pong[4];
-	uint8_t	 verification;
-	uint32_t last_activity;
-} t_connection;
-
-typedef struct
-{
-	uint32_t	 current_time;
-	uint64_t	 game_modes[GM_SIZE];
-	uint8_t		 active_games[GAMES_COUNT];
-	t_game		 g[GAMES_COUNT];
-	t_connection users[MAX_CLIENTS];
+	uint64_t game_modes[GM_SIZE];
+	uint8_t	 active_games[GAMES_COUNT];
+	t_game	 g[GAMES_COUNT];
+	t_snake	 users[MAX_CLIENTS];
+	uint64_t start_time;   // maybe?
+	uint64_t end_time;	   // maybe?
+	uint64_t current_time; // maybe?
+	uint64_t time_left;
+	uint64_t tick;
+	uint8_t	 game_mode;
 
 } t_server;
 
