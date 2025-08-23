@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-uint64_t elapsed_ms();
-uint64_t elapsed_ms_alternative();
+uint64_t elapsed_ms(int check);
+uint64_t elapsed_ms_alternative(void);
 
 #endif /*TIMER_H*/

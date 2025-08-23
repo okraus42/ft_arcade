@@ -23,7 +23,7 @@
 #include "timer.h"
 
 int	   server_fd;
-fd_set master_set;
+
 
 void shutdown_server(int signum)
 {
@@ -33,14 +33,18 @@ void shutdown_server(int signum)
 	exit(0);
 }
 
-int main()
+int main(void)
 {
+
+	t_server	s;
 	signal(SIGINT, shutdown_server);
+	memset(&s, 0, sizeof(s));
+	s.current_time = elapsed_ms(1);
 
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t		   addr_len = sizeof(client_addr);
 	// int client_sockets[MAX_CLIENTS] = {0};
-	char buffer[BUFFER_SIZE];
+	// char buffer[BUFFER_SIZE];
 
 	// Create socket
 	if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -71,35 +75,56 @@ int main()
 	logger(INFO, "listen passed", __FILE__, __LINE__);
 	printf("Server listening on port %d...\n", PORT);
 
-	FD_ZERO(&master_set);
-	FD_SET(server_fd, &master_set);
 	int max_sd = server_fd;
 
 	logger(SUCCESS, "Intialization passed", __FILE__, __LINE__);
+
+	fd_set		read_fds;
+	fd_set		write_fds;
 	while (1)
 	{
-		fd_set read_fds = master_set;
-		fd_set write_fds;
-
+		s.current_time = elapsed_ms(1);
+		FD_ZERO(&read_fds);
 		FD_ZERO(&write_fds);
 
-		// Example: if you have data pending for a specific socket
-		// you'd do something like:
-		// if (have_data_to_send) {
-		// 	FD_SET(client_socket, &write_fds);
-		// }
+		FD_SET(server_fd, &read_fds); 
+		max_sd = server_fd; 
+
+
+		for (int i = 0; i < MAX_CLIENTS; ++i)
+		{
+			if (s.users[i].sd)
+			{
+				if (s.users[i].sd > max_sd)
+					max_sd = s.users[i].sd;
+				if (s.users[i].sending == 0)
+				{
+					FD_SET(s.users[i].sd , &read_fds);
+				}
+				else
+				{
+					FD_SET(s.users[i].sd , &write_fds);
+				}
+			}
+		}
+
+
 		struct timeval tv;
 		tv.tv_sec = 0;		 // seconds
 		tv.tv_usec = 100000; // microseconds (0.1s)
-		if ((elapsed_ms() / 100 % 1000) == 0)
+		if ((elapsed_ms(0) / 100 % 1000) == 0)
 			logger(DEBUG1, "Before select x 1000", __FILE__, __LINE__);
-		else if ((elapsed_ms() / 100 % 100) == 0)
+		else if ((elapsed_ms(0) / 100 % 100) == 0)
 			logger(DEBUG2, "Before select x 100", __FILE__, __LINE__);
-		else if ((elapsed_ms() / 100 % 10) == 0)
+		else if ((elapsed_ms(0) / 100 % 10) == 0)
 			logger(DEBUG3, "Before select x 10", __FILE__, __LINE__);
 		else
 			logger(DEBUG4, "Before select", __FILE__, __LINE__);
+
+
 		int ret = select(max_sd + 1, &read_fds, &write_fds, NULL, &tv);
+
+
 		if (ret < 0)
 		{
 			if (errno == EINTR)
@@ -108,62 +133,160 @@ int main()
 			exit(EXIT_FAILURE);
 		}
 
-		for (int i = 0; i <= max_sd; i++)
+		if (ret == 0)
+			continue ;
+
+
+		if (FD_ISSET(server_fd, &read_fds))
 		{
-			if (FD_ISSET(i, &read_fds))
+			int new_sd = 0;
+			if ((new_sd = accept(server_fd,  (struct sockaddr*)&client_addr, &addr_len)) < 0) 
 			{
-				if (i == server_fd)
+				logger(ERROR, "accept failure", __FILE__, __LINE__);
+			}
+			if (new_sd < MAX_CLIENTS)
+			{
+				s.users[new_sd].sd = new_sd;
+				s.users[new_sd].port = ntohs(client_addr.sin_port);
+				s.users[new_sd].ip = ntohl(client_addr.sin_addr.s_addr);
+				s.users[new_sd].sending = 1;
+				logger(INFO, "New client", __FILE__, __LINE__);
+			}
+			else
+			{
+				logger(ERROR, "too many clients", __FILE__, __LINE__);
+			}
+		}
+		
+		for (int i = 0; i < MAX_CLIENTS; ++i)
+		{
+			int sd = s.users[i].sd;
+			if (FD_ISSET(sd, &read_fds))
+			{
+				logger(TRACE, "Reading", __FILE__, __LINE__);
+				if (s.users[i].verification < VERIFIED)
 				{
-					// New connection
-					int new_socket = accept(
-						server_fd, (struct sockaddr*)&client_addr, &addr_len);
-					if (new_socket < 0)
+					ssize_t n = recv(sd , s.users[i].ping_pong, 4, MSG_NOSIGNAL);
+					if (n <= 0) 
 					{
-						logger(ERROR, "accept failure", __FILE__, __LINE__);
-						continue;
-					}
-
-					FD_SET(new_socket, &master_set);
-					if (new_socket > max_sd)
-						max_sd = new_socket;
-					logger(INFO, "New client connected", __FILE__, __LINE__);
-					printf("New client connected: %d\n", new_socket);
-
-					// Send welcome message
-					char* msg = "Server: Hello, client! Please respond.\n";
-					send(new_socket, msg, strlen(msg), 0);
-				}
-				else
-				{
-					// Existing client sent message
-					int valread = recv(i, buffer, BUFFER_SIZE - 1, 0);
-					if (valread <= 0)
-					{
-						printf("Client %d disconnected.\n", i);
-						close(i);
-						FD_CLR(i, &master_set);
+						close(sd);
+						s.users[i].sd = 0;
+						logger(WARNING, "Client disconnected during recv", __FILE__, __LINE__);
 					}
 					else
 					{
-						buffer[valread] = '\0';
-						printf("Received from client %d: %s", i, buffer);
-						// Server ignores unsolicited messages
-						printf("Ignoring message unless prompted.\n");
+						if (n == 2)
+						{
+							if (s.users[i].verification == SERVER_PING)
+							{
+								if (s.users[i].ping_pong[0] == ((uint8_t)~SECRET))
+								{
+									s.users[i].sending = 1;
+									s.users[i].verification += 1;
+									logger(WARNING, "Client is trustworthy", __FILE__, __LINE__);
+								}
+								else
+								{
+									logger(WARNING, "Client is not trustworthy", __FILE__, __LINE__);
+								}
+							}
+							else
+							{
+								logger(WARNING, "Should not be here", __FILE__, __LINE__);
+							}
+						}
+						else if (n > 2)
+						{
+							logger(WARNING, "Client sending too much", __FILE__, __LINE__);
+						}
+						else
+							logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
 					}
 				}
+				else if (s.users[i].verification < REGISTERED)
+				{
+					char buffer[18];
+					ssize_t n = recv(sd , buffer, 18, MSG_NOSIGNAL);
+					if (n <= 0) 
+					{
+						close(sd);
+						s.users[i].sd = 0;
+						logger(WARNING, "Client disconnected during recv", __FILE__, __LINE__);
+					}
+					else
+					{
+						if (n == 16)
+						{
+							memcpy (s.users[i].name, buffer, 9);
+							memcpy (s.users[i].host, &(buffer[9]), 7);
+							write(1, buffer, 16);
+							write(1, "\n", 1);
+							printf("%s %s\n", s.users[i].name, s.users[i].host);
+							logger(INFO, "Client sent name and host", __FILE__, __LINE__);
+							s.users[i].verification = REGISTERED;
+						}
+						else if (n > 16)
+						{
+							logger(WARNING, "Client sending too much", __FILE__, __LINE__);
+						}
+						else
+							logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
+					}
+				}
+				else
+				{
+					logger(NOTICE, "Client verified, nothing to read??", __FILE__, __LINE__);
+					ssize_t n = recv(sd , s.users[i].ping_pong, 3, MSG_NOSIGNAL);
+					s.users[i].ping_pong[3] = 0;
+					(void)n;
+					// printf("%zi: %s\n", n, s.users[i].ping_pong);
+				}
 			}
-			if (FD_ISSET(i, &write_fds))
+			else if (FD_ISSET(sd, &write_fds))
 			{
-				// Ready to send data
-				// 	const char *msg = "Server: Periodic update!\n";
-				// 	int sent = send(i, msg, strlen(msg), 0);
-				// 	if (sent < 0) {
-				// 		perror("send");
-				// 		close(i);
-				// 		FD_CLR(i, &master_set);
-				// 	} else {
-				// 		printf("Sent periodic message to client %d\n", i);
-				// 	}
+				logger(TRACE, "Sending", __FILE__, __LINE__);
+				if (s.users[i].verification < VERIFIED)
+				{
+					ssize_t n;
+					if (s.users[i].verification == NOT_VERIFIED)
+					{
+						s.users[i].ping_pong[0] = 0;
+						s.users[i].ping_pong[1] = SECRET;
+						logger(TRACE, "NV: Sending secret", __FILE__, __LINE__);
+					}
+					else if (s.users[i].verification == CLIENT_SENT_SECRET)
+					{
+						s.users[i].ping_pong[0] = ~s.users[i].ping_pong[1];
+						s.users[i].ping_pong[1] = SECRET;
+						logger(TRACE, "CSS: Sending secret back", __FILE__, __LINE__);
+					}
+					else
+					{
+						logger(WARNING, "Should not be here either", __FILE__, __LINE__);
+					}
+					if ((n = send(sd , s.users[i].ping_pong, 2, MSG_NOSIGNAL)) <= 0) 
+					{
+						close(sd);
+						s.users[i].sd = 0;
+						logger(WARNING, "Client disconnected during send", __FILE__, __LINE__);
+					}
+					else
+					{
+						if (n == 2)
+						{
+							s.users[i].sending = 0;
+							s.users[i].verification += 1;
+							if (s.users[i].verification == SERVER_PONG)
+								s.users[i].verification = VERIFIED;
+						}
+						else
+							logger(NOTICE, "Partial send, retrying", __FILE__, __LINE__);
+					}
+				}
+				else
+				{
+					logger(NOTICE, "Client verified, nothing to send", __FILE__, __LINE__);
+				}
 			}
 		}
 	}

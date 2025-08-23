@@ -34,7 +34,7 @@ void logger(t_log_level log, char* message, char* file, int line)
 	else if (LOG_LEVEL > TRACE)
 		printf("%s%8lu %7s: %-32.32s %25.25s:%3i%s\n", // 8 + 1 + 7 + 2 + 40 + 1 + 20 + 1 + 3
 			format[log],
-			elapsed_ms(),
+			elapsed_ms(0),
 			level[log],
 			message,
 			file,
@@ -43,7 +43,7 @@ void logger(t_log_level log, char* message, char* file, int line)
 	else
 		printf("%s%8lu %7s: %-62.62s%s\n", // 8 + 1 + 7 + 2 + 40 + 1 + 20 + 1 + 3
 			format[log],
-			elapsed_ms(),
+			elapsed_ms(0),
 			level[log],
 			message,
 			ANSI_RESET);

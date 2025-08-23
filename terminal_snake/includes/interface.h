@@ -102,6 +102,17 @@ typedef enum
 	LOG_LEVELS
 } t_log_level;
 
+typedef enum
+{
+	NOT_VERIFIED, // just connected
+	SERVER_PING, //42
+	CLIENT_SENT_SECRET, //~42 + random
+	SERVER_PONG, // ~random + 42
+	VERIFIED,
+	REGISTERED,
+	VERIFICATION_LEVELS
+} t_verification;
+
 
 
 //map 0 empty space

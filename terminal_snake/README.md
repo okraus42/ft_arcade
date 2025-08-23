@@ -45,11 +45,21 @@ PLAN
 Friday
 
 Saturday
-- handshake
-- register user
-- client waiting window
-- client game window (before player can move)
-- refuse if the same name exists and is active -> spectator status
+- handshake (11:00)
+-- server sends secret (42)
+-- client checks (42)
+-- client sends secret (42, random uint_8)
+-- server verifies client (got 42 + secret)
+-- server sends secret (secret + secret xor)
+-- client verifies secret (secret + secret xor)
+-- timeout on inactive conenctions 15 seconds (later)
+- register user (14:00)
+-- client sends username + hostname start
+-- server sends game data 
+- client waiting window (16:00)
+-- countdown 60 seconds
+- client game window (before player can move) (17:00)
+// refuse if the same name exists and is active -> spectator status
 // unsigned long union with char 8 - check names
 // coalitions naboo, alderaan, mandalore, tatooine, other
 - solo game
