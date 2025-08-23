@@ -11,7 +11,7 @@
 
 #define WAIT_TIME_IN_SECONDS 15U
 #define MS_IN_SECOND		 1000U
-#define GAME_TIME_IN_SECONDS 15U //285
+#define GAME_TIME_IN_SECONDS 285U //285
 #define GAME_TICK 500U //285
 
 typedef enum

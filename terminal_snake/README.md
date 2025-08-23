@@ -58,12 +58,18 @@ Saturday
 -- server sends game data 
 - client waiting window (16:00)
 -- countdown 60 seconds
+
+Sunday
+-- Second countdown 15 seconds
 - client game window (before player can move) (17:00)
 // refuse if the same name exists and is active -> spectator status
 // unsigned long union with char 8 - check names
 // coalitions naboo, alderaan, mandalore, tatooine, other
-- solo game
+- solo game (20:00)
+-- Third countdown 15 seconds
+- solo game with global scores
+-- List highscores
 
-Sunday
+NEXT WEEK
 - multiplayer
 - parsing coalition names

@@ -8,6 +8,10 @@
 #include <sys/select.h>
 #include <unistd.h>
 
+#include <termios.h>
+#include <sys/stat.h>
+#include <signal.h>
+
 #include "logger.h"
 #include "snake_client.h"
 #include "interface.h"
@@ -19,8 +23,242 @@
 
 #define SECRET 84
 
+static struct termios g_saved_termios;  // saved terminal settings
+
+void disableRawMode()
+{
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &g_saved_termios);
+	fflush(stdout);
+	write(STDOUT_FILENO, EXIT_ALT_SCREEN, sizeof(EXIT_ALT_SCREEN) - 1);
+	write(STDOUT_FILENO, SHOW_CURSOR, sizeof(SHOW_CURSOR) - 1); // <-- ensures cursor shown
+}
+
+void	ft_exit(int num)
+{
+	disableRawMode();
+	dprintf(2, "Server not available\n");
+	exit(num);
+}
+
+void handleExit(int sig)
+{
+	disableRawMode();
+	if (sig != 0)
+	{
+		write(STDERR_FILENO, "\n[Exited due to signal]\n", 25);
+		exit(1);
+	}
+}
+
+// Enhanced raw mode setup
+void enableRawMode()
+{
+	struct termios raw;
+
+	// Get and save current terminal settings
+	tcgetattr(STDIN_FILENO, &g_saved_termios);
+	raw = g_saved_termios;
+
+	// Register cleanup handlers
+	signal(SIGINT, handleExit);
+	signal(SIGTERM, handleExit);
+	signal(SIGQUIT, handleExit);
+	signal(SIGHUP, handleExit);
+
+	// Modify flags to enable true raw mode
+	raw.c_lflag &= ~(ICANON | ECHO);    // character-wise input, no echo
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+	fflush(stdout);
+	write(STDOUT_FILENO, ENTER_ALT_SCREEN, sizeof(ENTER_ALT_SCREEN) - 1);
+}
+
+void	place_snake(t_game *g, int y, int x)
+{
+	uint8_t pos = y * 16 + x;
+	if (g->map[pos] == MAP_SNAKE1)
+		printf(SNAKE1_COLOR SNAKE_BODY RESET_COLOUR);
+	else if (g->map[pos] == MAP_FOOD)
+		printf(FOOD_COLOR FOOD RESET_COLOUR);
+	else
+		printf("  ");
+}
+	// GM_SERVER_STARTED,
+	// GM_REGISTRATION,
+	// GM_WAIT1,
+	// GM_PRACTICE,
+	// GM_WAIT2,
+	// GM_QUALIFICATION,
+	// GM_WAIT3,
+	// GM_ONE_VS_ONE,
+	// GM_WAIT4,
+void	print_wait(t_game *g, char *mode)
+{
+	int y = 0;
+	int x = 0;
+	printf("╔");
+	for (x = 1; x < 33; x++)
+		printf("═");
+	printf("╦");
+	for (x = 34; x < SCREEN_WIDTH - 1; x++)
+		printf("═");
+	printf("╗" "\n");
+	y = 0;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("      NAME |    SCORE | LENGTH | SPEED       ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("  %8.8s |%9i |%7i |%6i       ", g->player[0].name, g->player[0].score, g->player[0].length, g->player[0].last_data.speed);
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("2                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("3                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("4                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("5                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("6                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("7                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("8                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("╠");
+	printf("═════════════════════════════════════════════");
+	printf("╣" "\n");
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("1                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("2                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("3                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("4                                            ");
+	printf("║" "\n");
+	++y;
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
+	printf("5                                            ");
+	printf("║" "\n");
+	printf("╠════════════════════════════════╣");
+	printf("6                                            ");
+	printf("║" "\n");
+	printf("║  %-16.16s              ║", mode);
+	printf("7                                            ");
+	printf("║" "\n");
+	printf("║  Time left:%5lis              ║", g->time_left / 1000U);
+	printf("8                                            ");
+	printf("║" "\n");
+	printf("║                                ║");
+	printf("9                                            ");
+	printf("║" "\n");
+	printf("║                                ║");
+	printf("10                                           ");
+	printf("║" "\n");
+	printf("║                                ║");
+	printf("11                                           ");
+	printf("║" "\n");
+	printf("╚");
+	for (x = 1; x < 33; x++)
+		printf("═");
+	printf("╩");
+	for (x = 34; x < SCREEN_WIDTH - 1; x++)
+		printf("═");
+	printf("╝" "\n");
+}
+
+void	print_game(t_game *g)
+{
+	printf(CLEAR_SCREEN);
+	switch (g->game_mode)
+	{
+		case GM_REGISTRATION:
+		{
+			print_wait(g, "Registration");
+			break ;
+		}
+		case GM_WAIT1:
+		{
+			print_wait(g, "Game starting");
+			break ;
+		}
+		default:
+		{
+			printf("Unknown mode %i\n", g->game_mode);
+		}
+	}	
+}
+
 int main(void)
 {
+	printf(HIDE_CURSOR);
+	enableRawMode();
 	elapsed_ms(1);
 	int				   sock = 0;
 	uint8_t			   ping_pong[4];
@@ -36,7 +274,7 @@ int main(void)
 	if (username == NULL)
 	{
 		logger(ERROR, "No username", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
+		ft_exit(EXIT_FAILURE);
 	}
 	snprintf(name, 7, "%s", username);
 	logger(INFO, name, __FILE__, __LINE__);
@@ -48,12 +286,12 @@ int main(void)
 	else
 	{
 		logger(ERROR, "No hostname", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
+		ft_exit(EXIT_FAILURE);
 	}
 	if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		logger(ERROR, "socket() failed", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
+		ft_exit(EXIT_FAILURE);
 	}
 
 	server_addr.sin_family = AF_INET;
@@ -62,13 +300,13 @@ int main(void)
 	if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) <= 0)
 	{
 		logger(ERROR, "inet_pton() failed", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
+		ft_exit(EXIT_FAILURE);
 	}
 
 	if (connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0)
 	{
 		logger(ERROR, "connect() failed", __FILE__, __LINE__);
-		exit(EXIT_FAILURE);
+		ft_exit(EXIT_FAILURE);
 	}
 	logger(INFO, "Connected to server (or connecting)...", __FILE__, __LINE__);
 
@@ -145,8 +383,8 @@ int main(void)
 				memcpy (buffer, name, 9);
 				memcpy (&(buffer[9]), host, 7);
 				// snprintf(buffer, 16, "%s%c%s", name, 0, host);
-				write(1, buffer, 16);
-				write(1, "\n", 1);
+				// write(1, buffer, 16);
+				// write(1, "\n", 1);
 				logger(TRACE, "REGISTRATION: Sending name and host", __FILE__, __LINE__);
 				ssize_t n = send(sock, buffer, 16, MSG_NOSIGNAL);
 				if (n <= 0) 
@@ -244,7 +482,7 @@ int main(void)
 				if (n == sizeof(g))
 				{
 					logger(INFO, "received struct", __FILE__, __LINE__);
-					printf("time left: %li\n", g.time_left);
+					print_game(&g);
 				}
 				else if (n <= 0)
 				{
@@ -266,6 +504,7 @@ int main(void)
 
 	close(sock);
 	logger(INFO, "Client exiting", __FILE__, __LINE__);
+	disableRawMode();
 	return 0;
 }
 
