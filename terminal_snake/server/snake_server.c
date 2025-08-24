@@ -77,7 +77,7 @@ void init_board(t_game* g, uint8_t game_mode)
 #define SIZE 16
 #define MASK (SIZE - 1) // 0x0F for SIZE=16
 
-int move_pos(int pos, int dir)
+uint8_t move_pos(uint8_t pos, uint8_t dir)
 {
 	switch (dir)
 	{
