@@ -3,7 +3,7 @@
 #pragma once
 
 #define FOOD_COLOR		 "\033[38:5:231m"
-#define BACKGROUND_COLOR "\033[48:5:0m"
+#define BACKGROUND_COLOR "\033[48:5:16m"
 #define SNAKE1_COLOR	 "\033[38:5:33m"
 #define SNAKE2_COLOR	 "\033[38:5:28m"
 #define SNAKE3_COLOR	 "\033[38:5:214m"
@@ -23,8 +23,8 @@
 #define SCREEN_HEIGHT 8
 
 // ANSI Colours and Borders
-#define BORDER_COLOUR	 "\033[30;107m"
-#define HIGHLIGHT_COLOUR "\033[1;38;5;254;48;5;233m"
+#define BORDER_COLOUR	 "\033[30:107m"
+#define HIGHLIGHT_COLOUR "\033[1:38:5:254:48:5:233m"
 
 #define CLEAR_SCREEN	 "\033[2J\033[3J\033[H"
 #define HIDE_CURSOR		 "\033[?25l"
@@ -32,10 +32,5 @@
 
 #define ENTER_ALT_SCREEN "\033[?1049h"
 #define EXIT_ALT_SCREEN	 "\033[?1049l"
-
-#define LEVEL_1 "assets/map1.txt"
-#define LEVEL_2 "assets/map2.txt"
-#define LEVEL_3 "assets/map3.txt"
-#define LEVEL_4 "assets/map4.txt"
 
 #endif /*SNAKE_CLIENT_H*/

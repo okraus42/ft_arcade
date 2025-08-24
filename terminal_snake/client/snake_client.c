@@ -82,7 +82,7 @@ void	place_snake(t_game *g, int y, int x)
 	else if (g->map[pos] == MAP_FOOD)
 		printf(FOOD_COLOR FOOD COLOR_RESET);
 	else
-		printf(BACKGROUND_COLOR "  ");
+		printf(BACKGROUND_COLOR "  " COLOR_RESET);
 }
 	// GM_SERVER_STARTED,
 	// GM_REGISTRATION,
@@ -111,113 +111,118 @@ void	print_wait(t_game *g, char *mode)
 	printf("║");
 	printf("      NAME |    SCORE | LENGTH | SPEED       ");
 	printf("║" "\n");
-	++y;
+	++y;  // 1
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("  %8.8s |%9i |%7i |%6i       ", g->player[0].name, g->player[0].score, g->player[0].length, g->player[0].last_data.speed);
 	printf("║" "\n");
-	++y;
+	++y;  // 2
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("2                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  // 3
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("3                                            ");
 	printf("║" "\n");
-	++y;
+	++y; // 4
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("4                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //5
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("5                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //6
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("6                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  // 7
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("7                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //8
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("8                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //9
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("╠");
 	printf("═════════════════════════════════════════════");
 	printf("╣" "\n");
+	++y; //10
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("1                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //11
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("2                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //12
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("3                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //13
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("4                                            ");
 	printf("║" "\n");
-	++y;
+	++y;  //14
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("5                                            ");
 	printf("║" "\n");
-	printf("╠════════════════════════════════╣");
+	++y;  //15
+	printf("║");
+	for (x = 0; x < 16; x++)
+		place_snake(g, y, x);
+	printf("║");
 	printf("6                                            ");
 	printf("║" "\n");
-	printf("║  %-30.30s║", mode);
+	printf("╠════════════════════════════════╣");
 	printf("7                                            ");
 	printf("║" "\n");
-	printf("║  Time left:%5lis              ║", g->time_left / 1000U);
+	printf("║  %-30.30s║", mode);
 	printf("8                                            ");
 	printf("║" "\n");
-	printf("║                                ║");
+	printf("║  Time left:%5lis              ║", g->time_left / 1000U);
 	printf("9                                            ");
 	printf("║" "\n");
 	printf("║                                ║");

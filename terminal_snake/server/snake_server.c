@@ -16,14 +16,16 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <stdlib.h> // For rand() and srand()
+#include <time.h>	// For time()
+
 // 4. Third-party libraries
 
 // 5. Other project headers
 #include "logger.h"
 #include "timer.h"
 
-int	   server_fd;
-
+int server_fd;
 
 void shutdown_server(int signum)
 {
@@ -33,21 +35,154 @@ void shutdown_server(int signum)
 	exit(0);
 }
 
+void init_board(t_game* g, uint8_t game_mode)
+{
+	if (game_mode == GM_WAIT1)
+	{
+		g->players = 1;
+		g->map[GAME_WIDTH * 7U + 4] = MAP_SNAKE1 | MAP_SNAKE_HEAD;
+		g->player[0].segments[2] = GAME_WIDTH * 7U + 4;
+		g->player[0].head = 2;
+		g->player[0].length = 3;
+		g->map[GAME_WIDTH * 7U + 3] = MAP_SNAKE1 | MAP_SNAKE_BODY;
+		g->player[0].segments[1] = GAME_WIDTH * 7U + 3;
+		g->map[GAME_WIDTH * 7U + 2] =
+			MAP_SNAKE1 | MAP_SNAKE_BODY; //| MAP_SNAKE1_FOOD as tail later
+		g->player[0].segments[0] = GAME_WIDTH * 7U + 2;
+	}
+	// place players
+	// place food
+	printf("foods\n");
+	for (uint8_t i = 0U; i < FOODS; i++)
+	{
+		uint8_t r = rand() & 0xFF;
+		int		placing = 256;
+		do
+		{
+			if (g->map[r] == 0)
+			{
+				g->map[r] = MAP_FOOD;
+				placing = 0;
+				printf("a %i %i\n", r / 16, r % 16);
+			}
+			else
+			{
+				r = (r + 1) & 0xFF;
+				--placing;
+			}
+		} while (placing);
+	}
+}
+
+#define SIZE 16
+#define MASK (SIZE - 1) // 0x0F for SIZE=16
+
+int move_pos(int pos, int dir)
+{
+	switch (dir)
+	{
+		case 0: // right
+			return (pos & ~MASK) | ((pos + 1) & MASK);
+		case 1: // down
+			return (pos + SIZE) & 0xFF;
+		case 2: // left
+			return (pos & ~MASK) | ((pos - 1) & MASK);
+		case 3: // up
+			return (pos - SIZE) & 0xFF;
+		default:
+			return pos; // no movement if dir invalid
+	}
+}
+
+void update_board(t_game* g)
+{
+	uint8_t	new_head = move_pos(g->player[0].segments[g->player[0].head], g->player[0].last_data.dir);
+
+	//if food get longer
+	//if obstacle get shorter
+	// remove tail from map
+	// add new head
+	//replace head with body
+	g->map[new_head] = MAP_SNAKE1 | MAP_SNAKE_HEAD;
+	g->map[g->player[0].segments[g->player[0].head]] =
+		MAP_SNAKE1 | MAP_SNAKE_BODY;
+	g->player[0].head += 1;
+	g->player[0].segments[g->player[0].head] = new_head;
+	g->map[g->player[0].segments[(g->player[0].head - g->player[0].length) & 0xFF]] =  0;
+	g->player[0].score += g->player[0].length;
+}
+
+// typedef struct
+// {
+// 	uint16_t sd;
+// 	uint16_t port;
+// 	uint32_t ip;
+// 	uint8_t	 segments[GAME_WIDTH * GAME_HEIGHT];
+// 	uint8_t	 head;
+// 	uint8_t	 length;
+// 	uint8_t	 next_poop;
+// 	t_packet status;
+// 	uint32_t score;
+// 	char	 name[9];
+// 	char	 host[7];
+// 	uint8_t	 game_id : 7; //0 for spectators
+// 	uint8_t	 sending : 1;
+// 	t_packet last_data;
+// 	uint8_t	 ping_pong[4];
+// 	uint8_t	 verification;
+// 	uint64_t last_server_activity;
+// 	uint64_t last_client_activity;
+// } t_snake;
+
+// typedef struct
+// {
+// 	uint16_t map[GAME_WIDTH * GAME_HEIGHT];
+// 	t_snake	 player[8];
+// 	uint8_t	 players;
+// 	uint64_t start_time;   // maybe?
+// 	uint64_t end_time;	   // maybe?
+// 	uint64_t current_time; // maybe?
+// 	uint64_t time_left;
+// 	uint64_t tick;
+// 	uint8_t	 game_mode;
+// 	uint8_t	 game_speed;
+// 	char	 broadcast[256];
+// } t_game;
+
+void init_boards(t_server* s)
+{
+	for (int i = 0; i < GAMES_COUNT; ++i)
+	{
+		memset(&(s->g[i]), 0, sizeof(s->g[i]));
+		s->g[i].player[0] = s->users[i];
+		init_board(&(s->g[i]), s->game_mode);
+	}
+}
+
+void update_boards(t_server* s)
+{
+	for (int i = 0; i < GAMES_COUNT; ++i)
+	{
+		update_board(&(s->g[i]));
+	}
+}
+
 int main(void)
 {
 
-	t_server	s;
+	t_server s;
+	srand(time(NULL));
 	signal(SIGINT, shutdown_server);
 	memset(&s, 0, sizeof(s));
 	s.start_time = elapsed_ms(1);
 	s.end_time = elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
 	s.current_time = elapsed_ms(0);
 	s.game_mode = GM_REGISTRATION;
+	s.tick = GAME_TICK;
 	// uint64_t start_time;   // maybe?
 	// uint64_t end_time;	   // maybe?
 	// uint64_t current_time; // maybe?
 	// uint64_t time_left;
-
 
 	struct sockaddr_in server_addr, client_addr;
 	socklen_t		   addr_len = sizeof(client_addr);
@@ -87,8 +222,8 @@ int main(void)
 
 	logger(SUCCESS, "Intialization passed", __FILE__, __LINE__);
 
-	fd_set		read_fds;
-	fd_set		write_fds;
+	fd_set read_fds;
+	fd_set write_fds;
 	while (1)
 	{
 		s.current_time = elapsed_ms(1);
@@ -98,24 +233,29 @@ int main(void)
 			if (s.game_mode == GM_REGISTRATION)
 			{
 				s.start_time = elapsed_ms(1);
-				s.end_time = elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.end_time =
+					elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
 				s.current_time = elapsed_ms(0);
 				s.game_mode = GM_WAIT1;
+				init_boards(&s);
 				//init boards
 				// stop registrations
 			}
 			else if (s.game_mode == GM_WAIT1)
 			{
 				s.start_time = elapsed_ms(1);
-				s.end_time = elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.end_time =
+					elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
 				s.current_time = elapsed_ms(0);
 				s.game_mode = GM_PRACTICE;
+				s.next_tick = s.current_time + s.tick;
 				//game loop
 			}
 			else if (s.game_mode == GM_PRACTICE)
 			{
 				s.start_time = elapsed_ms(1);
-				s.end_time = elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.end_time =
+					elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
 				s.current_time = elapsed_ms(0);
 				s.game_mode = GM_WAIT2;
 				//reinit boards
@@ -123,25 +263,37 @@ int main(void)
 			else if (s.game_mode == GM_WAIT2)
 			{
 				s.start_time = elapsed_ms(1);
-				s.end_time = elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.end_time =
+					elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
 				s.current_time = elapsed_ms(0);
 				s.game_mode = GM_QUALIFICATION;
 				//game loop
 			}
 			else
-				break ;
+				break;
+		}
+		if (s.game_mode == GM_PRACTICE)
+		{
+			if (s.next_tick < s.current_time)
+			{
+				logger(INFO, "Updating boards", __FILE__, __LINE__);
+				s.next_tick = s.current_time + s.tick;
+				update_boards(&s);
+				logger(INFO, "Updated boards", __FILE__, __LINE__);
+			}
+			//game_loop
 		}
 		s.time_left = s.end_time - s.current_time;
 		FD_ZERO(&read_fds);
 		FD_ZERO(&write_fds);
 
-		FD_SET(server_fd, &read_fds); 
-		max_sd = server_fd; 
+		FD_SET(server_fd, &read_fds);
+		max_sd = server_fd;
 
 		for (int i = 0; i < MAX_CLIENTS; ++i)
 		{
 			if (s.users[i].verification < REGISTERED)
-				continue ;
+				continue;
 			if (s.current_time - s.users[i].last_server_activity > GAME_TICK)
 			{
 				s.users[i].last_server_activity = s.current_time;
@@ -159,15 +311,14 @@ int main(void)
 					max_sd = s.users[i].sd;
 				if (s.users[i].sending == 0)
 				{
-					FD_SET(s.users[i].sd , &read_fds);
+					FD_SET(s.users[i].sd, &read_fds);
 				}
 				else
 				{
-					FD_SET(s.users[i].sd , &write_fds);
+					FD_SET(s.users[i].sd, &write_fds);
 				}
 			}
 		}
-
 
 		struct timeval tv;
 		tv.tv_sec = 0;		 // seconds
@@ -181,9 +332,7 @@ int main(void)
 		else
 			logger(DEBUG4, "Before select", __FILE__, __LINE__);
 
-
 		int ret = select(max_sd + 1, &read_fds, &write_fds, NULL, &tv);
-
 
 		if (ret < 0)
 		{
@@ -194,13 +343,13 @@ int main(void)
 		}
 
 		if (ret == 0)
-			continue ;
-
+			continue;
 
 		if (FD_ISSET(server_fd, &read_fds))
 		{
 			int new_sd = 0;
-			if ((new_sd = accept(server_fd,  (struct sockaddr*)&client_addr, &addr_len)) < 0) 
+			if ((new_sd = accept(
+					 server_fd, (struct sockaddr*)&client_addr, &addr_len)) < 0)
 			{
 				logger(ERROR, "accept failure", __FILE__, __LINE__);
 			}
@@ -226,7 +375,7 @@ int main(void)
 				close(new_sd);
 			}
 		}
-		
+
 		for (int i = 0; i < MAX_CLIENTS; ++i)
 		{
 			int sd = s.users[i].sd;
@@ -235,12 +384,15 @@ int main(void)
 				logger(TRACE, "Reading", __FILE__, __LINE__);
 				if (s.users[i].verification < VERIFIED)
 				{
-					ssize_t n = recv(sd , s.users[i].ping_pong, 4, MSG_NOSIGNAL);
-					if (n <= 0) 
+					ssize_t n = recv(sd, s.users[i].ping_pong, 4, MSG_NOSIGNAL);
+					if (n <= 0)
 					{
 						close(sd);
 						s.users[i].sd = 0;
-						logger(WARNING, "Client disconnected during recv", __FILE__, __LINE__);
+						logger(WARNING,
+							   "Client disconnected during recv",
+							   __FILE__,
+							   __LINE__);
 					}
 					else
 					{
@@ -248,65 +400,96 @@ int main(void)
 						{
 							if (s.users[i].verification == SERVER_PING)
 							{
-								if (s.users[i].ping_pong[0] == ((uint8_t)~SECRET))
+								if (s.users[i].ping_pong[0] ==
+									((uint8_t)~SECRET))
 								{
 									s.users[i].sending = 1;
 									s.users[i].verification += 1;
-									logger(WARNING, "Client is trustworthy", __FILE__, __LINE__);
+									logger(WARNING,
+										   "Client is trustworthy",
+										   __FILE__,
+										   __LINE__);
 								}
 								else
 								{
-									logger(WARNING, "Client is not trustworthy", __FILE__, __LINE__);
+									logger(WARNING,
+										   "Client is not trustworthy",
+										   __FILE__,
+										   __LINE__);
 								}
 							}
 							else
 							{
-								logger(WARNING, "Should not be here", __FILE__, __LINE__);
+								logger(WARNING,
+									   "Should not be here",
+									   __FILE__,
+									   __LINE__);
 							}
 						}
 						else if (n > 2)
 						{
-							logger(WARNING, "Client sending too much", __FILE__, __LINE__);
+							logger(WARNING,
+								   "Client sending too much",
+								   __FILE__,
+								   __LINE__);
 						}
 						else
-							logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
+							logger(NOTICE,
+								   "Partial recv, retrying",
+								   __FILE__,
+								   __LINE__);
 					}
 				}
 				else if (s.users[i].verification < REGISTERED)
 				{
-					char buffer[18];
-					ssize_t n = recv(sd , buffer, 18, MSG_NOSIGNAL);
-					if (n <= 0) 
+					char	buffer[18];
+					ssize_t n = recv(sd, buffer, 18, MSG_NOSIGNAL);
+					if (n <= 0)
 					{
 						close(sd);
 						s.users[i].sd = 0;
-						logger(WARNING, "Client disconnected during recv", __FILE__, __LINE__);
+						logger(WARNING,
+							   "Client disconnected during recv",
+							   __FILE__,
+							   __LINE__);
 					}
 					else
 					{
 						if (n == 16)
 						{
-							memcpy (s.users[i].name, buffer, 9);
-							memcpy (s.users[i].host, &(buffer[9]), 7);
+							memcpy(s.users[i].name, buffer, 9);
+							memcpy(s.users[i].host, &(buffer[9]), 7);
 							write(1, buffer, 16);
 							write(1, "\n", 1);
 							printf("%s %s\n", s.users[i].name, s.users[i].host);
-							logger(INFO, "Client sent name and host", __FILE__, __LINE__);
+							logger(INFO,
+								   "Client sent name and host",
+								   __FILE__,
+								   __LINE__);
 							s.users[i].verification = REGISTERED;
 							s.users[i].game_id = i;
 						}
 						else if (n > 16)
 						{
-							logger(WARNING, "Client sending too much", __FILE__, __LINE__);
+							logger(WARNING,
+								   "Client sending too much",
+								   __FILE__,
+								   __LINE__);
 						}
 						else
-							logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
+							logger(NOTICE,
+								   "Partial recv, retrying",
+								   __FILE__,
+								   __LINE__);
 					}
 				}
 				else
 				{
-					logger(NOTICE, "Client verified, nothing to read??", __FILE__, __LINE__);
-					ssize_t n = recv(sd , s.users[i].ping_pong, 3, MSG_NOSIGNAL);
+					logger(NOTICE,
+						   "Client verified, nothing to read??",
+						   __FILE__,
+						   __LINE__);
+					ssize_t n = recv(sd, s.users[i].ping_pong, 3, MSG_NOSIGNAL);
 					s.users[i].ping_pong[3] = 0;
 					(void)n;
 					// printf("%zi: %s\n", n, s.users[i].ping_pong);
@@ -328,17 +511,27 @@ int main(void)
 					{
 						s.users[i].ping_pong[0] = ~s.users[i].ping_pong[1];
 						s.users[i].ping_pong[1] = SECRET;
-						logger(TRACE, "CSS: Sending secret back", __FILE__, __LINE__);
+						logger(TRACE,
+							   "CSS: Sending secret back",
+							   __FILE__,
+							   __LINE__);
 					}
 					else
 					{
-						logger(WARNING, "Should not be here either", __FILE__, __LINE__);
+						logger(WARNING,
+							   "Should not be here either",
+							   __FILE__,
+							   __LINE__);
 					}
-					if ((n = send(sd , s.users[i].ping_pong, 2, MSG_NOSIGNAL)) <= 0) 
+					if ((n = send(sd, s.users[i].ping_pong, 2, MSG_NOSIGNAL)) <=
+						0)
 					{
 						close(sd);
 						s.users[i].sd = 0;
-						logger(WARNING, "Client disconnected during send", __FILE__, __LINE__);
+						logger(WARNING,
+							   "Client disconnected during send",
+							   __FILE__,
+							   __LINE__);
 					}
 					else
 					{
@@ -350,18 +543,27 @@ int main(void)
 								s.users[i].verification = VERIFIED;
 						}
 						else
-							logger(NOTICE, "Partial send, retrying", __FILE__, __LINE__);
+							logger(NOTICE,
+								   "Partial send, retrying",
+								   __FILE__,
+								   __LINE__);
 					}
 				}
 				else
 				{
 					logger(TRACE, "Sending", __FILE__, __LINE__);
-					ssize_t n = send(sd , &(s.g[s.users[i].game_id]), sizeof(t_game), MSG_NOSIGNAL);
-					if (n <= 0) 
+					ssize_t n = send(sd,
+									 &(s.g[s.users[i].game_id]),
+									 sizeof(t_game),
+									 MSG_NOSIGNAL);
+					if (n <= 0)
 					{
 						close(sd);
 						s.users[i].sd = 0;
-						logger(WARNING, "Client disconnected during send", __FILE__, __LINE__);
+						logger(WARNING,
+							   "Client disconnected during send",
+							   __FILE__,
+							   __LINE__);
 					}
 					else
 					{
@@ -370,7 +572,10 @@ int main(void)
 							s.users[i].sending = 0;
 						}
 						else
-							logger(NOTICE, "Partial send, retrying", __FILE__, __LINE__);
+							logger(NOTICE,
+								   "Partial send, retrying",
+								   __FILE__,
+								   __LINE__);
 					}
 				}
 			}

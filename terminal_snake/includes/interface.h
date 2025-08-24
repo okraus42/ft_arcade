@@ -9,10 +9,12 @@
 #define GAME_WIDTH	16U
 #define GAME_HEIGHT 16U
 
-#define WAIT_TIME_IN_SECONDS 15U
+#define WAIT_TIME_IN_SECONDS 5U
 #define MS_IN_SECOND		 1000U
-#define GAME_TIME_IN_SECONDS 25U //285
-#define GAME_TICK 500U //285
+#define GAME_TIME_IN_SECONDS 10U //285
+#define GAME_TICK 500U 
+
+#define FOODS 4U
 
 typedef enum
 {
@@ -133,6 +135,15 @@ typedef enum
 	REGISTERED,
 	VERIFICATION_LEVELS
 } t_verification;
+
+typedef enum
+{
+	RIGHT,
+	DOWN,
+	LEFT,
+	UP
+} t_direction;
+
 
 //map 0 empty space
 // dead snake -> food

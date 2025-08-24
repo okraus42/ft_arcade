@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #define PORT		12345
-#define MAX_CLIENTS 128
+#define MAX_CLIENTS 16
 #define BUFFER_SIZE 1024
-#define GAMES_COUNT 128
+#define GAMES_COUNT 16
 
 #define SECRET 42
 
@@ -23,6 +23,7 @@ typedef struct
 	uint64_t end_time;	   // maybe?
 	uint64_t current_time; // maybe?
 	uint64_t time_left;
+	uint64_t next_tick;
 	uint64_t tick;
 	uint8_t	 game_mode;
 
