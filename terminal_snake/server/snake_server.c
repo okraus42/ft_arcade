@@ -95,7 +95,41 @@ int main(void)
 		if (s.end_time < s.current_time)
 		{
 			logger(NOTICE, "TIME OFF", __FILE__, __LINE__);
-			break ;
+			if (s.game_mode == GM_REGISTRATION)
+			{
+				s.start_time = elapsed_ms(1);
+				s.end_time = elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.current_time = elapsed_ms(0);
+				s.game_mode = GM_WAIT1;
+				//init boards
+				// stop registrations
+			}
+			else if (s.game_mode == GM_WAIT1)
+			{
+				s.start_time = elapsed_ms(1);
+				s.end_time = elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.current_time = elapsed_ms(0);
+				s.game_mode = GM_PRACTICE;
+				//game loop
+			}
+			else if (s.game_mode == GM_PRACTICE)
+			{
+				s.start_time = elapsed_ms(1);
+				s.end_time = elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.current_time = elapsed_ms(0);
+				s.game_mode = GM_WAIT2;
+				//reinit boards
+			}
+			else if (s.game_mode == GM_WAIT2)
+			{
+				s.start_time = elapsed_ms(1);
+				s.end_time = elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.current_time = elapsed_ms(0);
+				s.game_mode = GM_QUALIFICATION;
+				//game loop
+			}
+			else
+				break ;
 		}
 		s.time_left = s.end_time - s.current_time;
 		FD_ZERO(&read_fds);
@@ -172,15 +206,24 @@ int main(void)
 			}
 			if (new_sd < MAX_CLIENTS)
 			{
-				s.users[new_sd].sd = new_sd;
-				s.users[new_sd].port = ntohs(client_addr.sin_port);
-				s.users[new_sd].ip = ntohl(client_addr.sin_addr.s_addr);
-				s.users[new_sd].sending = 1;
-				logger(INFO, "New client", __FILE__, __LINE__);
+				if (s.game_mode != GM_REGISTRATION)
+				{
+					logger(ERROR, "late registration", __FILE__, __LINE__);
+					close(new_sd);
+				}
+				else
+				{
+					s.users[new_sd].sd = new_sd;
+					s.users[new_sd].port = ntohs(client_addr.sin_port);
+					s.users[new_sd].ip = ntohl(client_addr.sin_addr.s_addr);
+					s.users[new_sd].sending = 1;
+					logger(INFO, "New client", __FILE__, __LINE__);
+				}
 			}
 			else
 			{
 				logger(ERROR, "too many clients", __FILE__, __LINE__);
+				close(new_sd);
 			}
 		}
 		

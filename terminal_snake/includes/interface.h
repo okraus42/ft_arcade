@@ -11,7 +11,7 @@
 
 #define WAIT_TIME_IN_SECONDS 15U
 #define MS_IN_SECOND		 1000U
-#define GAME_TIME_IN_SECONDS 285U //285
+#define GAME_TIME_IN_SECONDS 25U //285
 #define GAME_TICK 500U //285
 
 typedef enum
@@ -42,6 +42,9 @@ typedef enum
 	MAP_SNAKE6 = 0x20U,
 	MAP_SNAKE7 = 0x40U,
 	MAP_SNAKE8 = 0x80U,
+	MAP_SNAKE_HEAD = 0xFF00U,  //ff01
+	MAP_SNAKE_BODY = 0x0000U,  //0101
+	// MAP_SNAKE_TAIL = 0x0100U,  //0101 snake food + snake body (for later iteration of game)
 	MAP_SNAKE1_FOOD = 0x0100U,
 	MAP_SNAKE2_FOOD = 0x0200U,
 	MAP_SNAKE3_FOOD = 0x0400U,

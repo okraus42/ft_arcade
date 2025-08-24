@@ -75,12 +75,14 @@ void enableRawMode()
 void	place_snake(t_game *g, int y, int x)
 {
 	uint8_t pos = y * 16 + x;
-	if (g->map[pos] == MAP_SNAKE1)
-		printf(SNAKE1_COLOR SNAKE_BODY RESET_COLOUR);
+	if (g->map[pos] == (MAP_SNAKE1 | MAP_SNAKE_HEAD))
+		printf(SNAKE1_COLOR SNAKE_HEAD COLOR_RESET);
+	else if (g->map[pos] == MAP_SNAKE1)
+		printf(SNAKE1_COLOR SNAKE_BODY COLOR_RESET);
 	else if (g->map[pos] == MAP_FOOD)
-		printf(FOOD_COLOR FOOD RESET_COLOUR);
+		printf(FOOD_COLOR FOOD COLOR_RESET);
 	else
-		printf("  ");
+		printf(BACKGROUND_COLOR "  ");
 }
 	// GM_SERVER_STARTED,
 	// GM_REGISTRATION,
@@ -209,7 +211,7 @@ void	print_wait(t_game *g, char *mode)
 	printf("╠════════════════════════════════╣");
 	printf("6                                            ");
 	printf("║" "\n");
-	printf("║  %-16.16s              ║", mode);
+	printf("║  %-30.30s║", mode);
 	printf("7                                            ");
 	printf("║" "\n");
 	printf("║  Time left:%5lis              ║", g->time_left / 1000U);
@@ -245,7 +247,22 @@ void	print_game(t_game *g)
 		}
 		case GM_WAIT1:
 		{
-			print_wait(g, "Game starting");
+			print_wait(g, "Practice starting soon");
+			break ;
+		}
+		case GM_PRACTICE:
+		{
+			print_wait(g, "Practice round");
+			break ;
+		}
+		case GM_WAIT2:
+		{
+			print_wait(g, "Game starting soon");
+			break ;
+		}
+		case GM_QUALIFICATION:
+		{
+			print_wait(g, "Game");
 			break ;
 		}
 		default:
