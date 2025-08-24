@@ -8,13 +8,13 @@
 #include <sys/select.h>
 #include <unistd.h>
 
-#include <termios.h>
-#include <sys/stat.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <termios.h>
 
+#include "interface.h"
 #include "logger.h"
 #include "snake_client.h"
-#include "interface.h"
 #include "timer.h"
 
 #define SERVER_IP	"127.0.0.1"
@@ -23,17 +23,19 @@
 
 #define SECRET 84
 
-static struct termios g_saved_termios;  // saved terminal settings
+static struct termios g_saved_termios; // saved terminal settings
 
 void disableRawMode()
 {
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &g_saved_termios);
 	fflush(stdout);
 	write(STDOUT_FILENO, EXIT_ALT_SCREEN, sizeof(EXIT_ALT_SCREEN) - 1);
-	write(STDOUT_FILENO, SHOW_CURSOR, sizeof(SHOW_CURSOR) - 1); // <-- ensures cursor shown
+	write(STDOUT_FILENO,
+		  SHOW_CURSOR,
+		  sizeof(SHOW_CURSOR) - 1); // <-- ensures cursor shown
 }
 
-void	ft_exit(int num)
+void ft_exit(int num)
 {
 	disableRawMode();
 	dprintf(2, "Server not available\n");
@@ -66,13 +68,100 @@ void enableRawMode()
 	signal(SIGHUP, handleExit);
 
 	// Modify flags to enable true raw mode
-	raw.c_lflag &= ~(ICANON | ECHO);    // character-wise input, no echo
+	raw.c_lflag &= ~(ICANON | ECHO); // character-wise input, no echo
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 	fflush(stdout);
 	write(STDOUT_FILENO, ENTER_ALT_SCREEN, sizeof(ENTER_ALT_SCREEN) - 1);
+
+	    // Set stdin non-blocking
+    int flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
 }
 
-void	place_snake(t_game *g, int y, int x)
+// Read direction: 0=right, 1=down, 2=left, 3=up, keep old_dir if invalid
+int read_direction(int old_dir)
+{
+	char c;
+	int	 new_dir = old_dir;
+
+	if (read(STDIN_FILENO, &c, 1) < 0)
+		return old_dir;
+
+	// Handle arrow keys (3-byte sequence: ESC [ A/B/C/D)
+	if (c == '\033')
+	{
+		char seq[2];
+		if (read(STDIN_FILENO, &seq[0], 1) < 0)
+			return old_dir;
+		if (read(STDIN_FILENO, &seq[1], 1) < 0)
+			return old_dir;
+
+		if (seq[0] == '[')
+		{
+			switch (seq[1])
+			{
+				case 'C':
+					new_dir = 0;
+					break; // right
+				case 'B':
+					new_dir = 1;
+					break; // down
+				case 'D':
+					new_dir = 2;
+					break; // left
+				case 'A':
+					new_dir = 3;
+					break; // up
+			}
+		}
+	}
+	else
+	{
+		// Handle WASD
+		switch (c)
+		{
+			case 'd':
+			case 'D':
+				new_dir = 0;
+				break; // right
+			case 's':
+			case 'S':
+				new_dir = 1;
+				break; // down
+			case 'a':
+			case 'A':
+				new_dir = 2;
+				break; // left
+			case 'w':
+			case 'W':
+				new_dir = 3;
+				break; // up
+		}
+	}
+
+	// Prevent reversing direction: if opposite, ignore input
+	if (((new_dir + 2) & 0x3) == old_dir)
+	{
+		// Opposite direction, keep old one
+		return old_dir;
+	}
+
+	return new_dir;
+}
+
+int check_dir(t_game* g, t_packet *packet)
+{
+	int old_dir = g->player[0].last_data.dir;
+	int new_dir = read_direction(old_dir);
+	if (new_dir != old_dir)
+	{
+		packet->dir = new_dir;
+		return 1;
+	}
+	return 0;
+}
+
+void place_snake(t_game* g, int y, int x)
 {
 	uint8_t pos = y * 16 + x;
 	if (g->map[pos] == (MAP_SNAKE1 | MAP_SNAKE_HEAD))
@@ -84,16 +173,16 @@ void	place_snake(t_game *g, int y, int x)
 	else
 		printf(BACKGROUND_COLOR "  " COLOR_RESET);
 }
-	// GM_SERVER_STARTED,
-	// GM_REGISTRATION,
-	// GM_WAIT1,
-	// GM_PRACTICE,
-	// GM_WAIT2,
-	// GM_QUALIFICATION,
-	// GM_WAIT3,
-	// GM_ONE_VS_ONE,
-	// GM_WAIT4,
-void	print_wait(t_game *g, char *mode)
+// GM_SERVER_STARTED,
+// GM_REGISTRATION,
+// GM_WAIT1,
+// GM_PRACTICE,
+// GM_WAIT2,
+// GM_QUALIFICATION,
+// GM_WAIT3,
+// GM_ONE_VS_ONE,
+// GM_WAIT4,
+void print_wait(t_game* g, char* mode)
 {
 	int y = 0;
 	int x = 0;
@@ -103,144 +192,171 @@ void	print_wait(t_game *g, char *mode)
 	printf("╦");
 	for (x = 34; x < SCREEN_WIDTH - 1; x++)
 		printf("═");
-	printf("╗" "\n");
+	printf("╗"
+		   "\n");
 	y = 0;
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("      NAME |    SCORE | LENGTH | SPEED       ");
-	printf("║" "\n");
-	++y;  // 1
+	printf("║"
+		   "\n");
+	++y; // 1
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
-	printf("  %8.8s |%9i |%7i |%6i       ", g->player[0].name, g->player[0].score, g->player[0].length, g->player[0].last_data.speed);
-	printf("║" "\n");
-	++y;  // 2
+	printf("  %8.8s |%9i |%7i |%6i       ",
+		   g->player[0].name,
+		   g->player[0].score,
+		   g->player[0].length,
+		   g->player[0].last_data.speed);
+	printf("║"
+		   "\n");
+	++y; // 2
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("2                                            ");
-	printf("║" "\n");
-	++y;  // 3
+	printf("║"
+		   "\n");
+	++y; // 3
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("3                                            ");
-	printf("║" "\n");
+	printf("║"
+		   "\n");
 	++y; // 4
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("4                                            ");
-	printf("║" "\n");
-	++y;  //5
+	printf("║"
+		   "\n");
+	++y; //5
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("5                                            ");
-	printf("║" "\n");
-	++y;  //6
+	printf("║"
+		   "\n");
+	++y; //6
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("6                                            ");
-	printf("║" "\n");
-	++y;  // 7
+	printf("║"
+		   "\n");
+	++y; // 7
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("7                                            ");
-	printf("║" "\n");
-	++y;  //8
+	printf("║"
+		   "\n");
+	++y; //8
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("8                                            ");
-	printf("║" "\n");
-	++y;  //9
+	printf("║"
+		   "\n");
+	++y; //9
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("╠");
 	printf("═════════════════════════════════════════════");
-	printf("╣" "\n");
+	printf("╣"
+		   "\n");
 	++y; //10
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("1                                            ");
-	printf("║" "\n");
-	++y;  //11
+	printf("║"
+		   "\n");
+	++y; //11
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("2                                            ");
-	printf("║" "\n");
-	++y;  //12
+	printf("║"
+		   "\n");
+	++y; //12
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("3                                            ");
-	printf("║" "\n");
-	++y;  //13
+	printf("║"
+		   "\n");
+	++y; //13
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("4                                            ");
-	printf("║" "\n");
-	++y;  //14
+	printf("║"
+		   "\n");
+	++y; //14
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("5                                            ");
-	printf("║" "\n");
-	++y;  //15
+	printf("║"
+		   "\n");
+	++y; //15
 	printf("║");
 	for (x = 0; x < 16; x++)
 		place_snake(g, y, x);
 	printf("║");
 	printf("6                                            ");
-	printf("║" "\n");
+	printf("║"
+		   "\n");
 	printf("╠════════════════════════════════╣");
 	printf("7                                            ");
-	printf("║" "\n");
+	printf("║"
+		   "\n");
 	printf("║  %-30.30s║", mode);
 	printf("8                                            ");
-	printf("║" "\n");
+	printf("║"
+		   "\n");
 	printf("║  Time left:%5lis              ║", g->time_left / 1000U);
 	printf("9                                            ");
-	printf("║" "\n");
+	printf("║"
+		   "\n");
 	printf("║                                ║");
 	printf("10                                           ");
-	printf("║" "\n");
+	printf("║"
+		   "\n");
 	printf("║                                ║");
 	printf("11                                           ");
-	printf("║" "\n");
+	printf("║"
+		   "\n");
 	printf("╚");
 	for (x = 1; x < 33; x++)
 		printf("═");
 	printf("╩");
 	for (x = 34; x < SCREEN_WIDTH - 1; x++)
 		printf("═");
-	printf("╝" "\n");
+	printf("╝"
+		   "\n");
 }
 
-void	print_game(t_game *g)
+void print_game(t_game* g)
 {
 	printf(CLEAR_SCREEN);
 	switch (g->game_mode)
@@ -248,33 +364,33 @@ void	print_game(t_game *g)
 		case GM_REGISTRATION:
 		{
 			print_wait(g, "Registration");
-			break ;
+			break;
 		}
 		case GM_WAIT1:
 		{
 			print_wait(g, "Practice starting soon");
-			break ;
+			break;
 		}
 		case GM_PRACTICE:
 		{
 			print_wait(g, "Practice round");
-			break ;
+			break;
 		}
 		case GM_WAIT2:
 		{
 			print_wait(g, "Game starting soon");
-			break ;
+			break;
 		}
 		case GM_QUALIFICATION:
 		{
 			print_wait(g, "Game");
-			break ;
+			break;
 		}
 		default:
 		{
 			printf("Unknown mode %i\n", g->game_mode);
 		}
-	}	
+	}
 }
 
 int main(void)
@@ -284,15 +400,17 @@ int main(void)
 	elapsed_ms(1);
 	int				   sock = 0;
 	uint8_t			   ping_pong[4];
-	uint8_t				verified = 0;
+	uint8_t			   verified = 0;
 	struct sockaddr_in server_addr;
 	ssize_t			   write_len = 0;
-	char				name[9] = {0};
-	char				host[7] = {0};
-	t_game				g;
-	
-	char hostname[256];
-	const char *username = getenv("USER");
+	char			   name[9] = {0};
+	char			   host[7] = {0};
+	t_game			   g;
+	t_packet			packet;
+	uint64_t			next_update = 0;
+
+	char		hostname[256];
+	const char* username = getenv("USER");
 	if (username == NULL)
 	{
 		logger(ERROR, "No username", __FILE__, __LINE__);
@@ -336,6 +454,21 @@ int main(void)
 	while (1)
 	{
 		elapsed_ms(1);
+		if (g.game_mode == GM_PRACTICE)
+		{
+			write_len = check_dir(&g, &packet);
+			if (write_len && next_update < elapsed_ms(0))
+			{
+				write_len = sizeof(t_packet);
+				next_update = elapsed_ms(0) + GAME_TICK / 5;
+			}
+			else
+			{
+				write_len = 0;
+			}
+		}
+		//write new dir and stuff if game status is in practice
+		elapsed_ms(1);
 		FD_ZERO(&read_fds);
 		FD_ZERO(&write_fds);
 
@@ -378,21 +511,26 @@ int main(void)
 					ping_pong[1] = SECRET;
 					logger(TRACE, "SP: Sending secret", __FILE__, __LINE__);
 					ssize_t n = send(sock, ping_pong, 2, MSG_NOSIGNAL);
-					if ((n ) <= 0) 
+					if ((n) <= 0)
 					{
-						logger(WARNING, "Client disconnected during send", __FILE__, __LINE__);
+						logger(WARNING,
+							   "Client disconnected during send",
+							   __FILE__,
+							   __LINE__);
 						close(sock);
-						break ;
+						break;
 					}
 					else if (n == write_len)
 					{
 						write_len = 0;
 						verified += 1;
 						logger(SUCCESS, "Successful send", __FILE__, __LINE__);
-						
 					}
 					else
-						logger(NOTICE, "Partial send, retrying", __FILE__, __LINE__);
+						logger(NOTICE,
+							   "Partial send, retrying",
+							   __FILE__,
+							   __LINE__);
 				}
 				else
 				{
@@ -402,35 +540,62 @@ int main(void)
 			else if (verified < REGISTERED)
 			{
 				char buffer[16];
-				memcpy (buffer, name, 9);
-				memcpy (&(buffer[9]), host, 7);
+				memcpy(buffer, name, 9);
+				memcpy(&(buffer[9]), host, 7);
 				// snprintf(buffer, 16, "%s%c%s", name, 0, host);
 				// write(1, buffer, 16);
 				// write(1, "\n", 1);
-				logger(TRACE, "REGISTRATION: Sending name and host", __FILE__, __LINE__);
+				logger(TRACE,
+					   "REGISTRATION: Sending name and host",
+					   __FILE__,
+					   __LINE__);
 				ssize_t n = send(sock, buffer, 16, MSG_NOSIGNAL);
-				if (n <= 0) 
+				if (n <= 0)
 				{
-					logger(WARNING, "Client disconnected during send", __FILE__, __LINE__);
+					logger(WARNING,
+						   "Client disconnected during send",
+						   __FILE__,
+						   __LINE__);
 					close(sock);
-					break ;
+					break;
 				}
 				else if (n == write_len)
 				{
 					write_len = 0;
 					verified += 1;
 					logger(SUCCESS, "Successful send", __FILE__, __LINE__);
-					
 				}
 				else
-					logger(NOTICE, "Partial send, retrying", __FILE__, __LINE__);
+					logger(
+						NOTICE, "Partial send, retrying", __FILE__, __LINE__);
 			}
 			else
 			{
-				//registered handling game 
+				//registered handling game
 				//countdown
 				// game
 				// score
+				if (g.game_mode == GM_PRACTICE)
+				{
+					ssize_t n = send(sock, &packet, sizeof(packet), MSG_NOSIGNAL);
+					if (n <= 0)
+					{
+						logger(WARNING,
+							"Client disconnected during send",
+							__FILE__,
+							__LINE__);
+						close(sock);
+						break;
+					}
+					else if (n == sizeof(packet))
+					{
+						write_len = 0;
+						logger(SUCCESS, "Successful send", __FILE__, __LINE__);
+					}
+					else
+						logger(
+							NOTICE, "Partial send, retrying", __FILE__, __LINE__);
+				}
 				logger(INFO, "Not implemented", __FILE__, __LINE__);
 				write_len = 0;
 			}
@@ -460,11 +625,15 @@ int main(void)
 						{
 							write_len = 2;
 							verified += 1;
-							logger(INFO, "NV: Server is okay", __FILE__, __LINE__);
+							logger(
+								INFO, "NV: Server is okay", __FILE__, __LINE__);
 						}
 						else
 						{
-							logger(WARNING, "Server is not okay", __FILE__, __LINE__);
+							logger(WARNING,
+								   "Server is not okay",
+								   __FILE__,
+								   __LINE__);
 						}
 					}
 					else if (verified == CLIENT_SENT_SECRET)
@@ -473,30 +642,42 @@ int main(void)
 						{
 							write_len = 16;
 							verified = VERIFIED;
-							logger(INFO, "CSS: Server is trustworthy", __FILE__, __LINE__);
+							logger(INFO,
+								   "CSS: Server is trustworthy",
+								   __FILE__,
+								   __LINE__);
 						}
 						else
 						{
-							logger(WARNING, "Server is not trustworthy", __FILE__, __LINE__);
+							logger(WARNING,
+								   "Server is not trustworthy",
+								   __FILE__,
+								   __LINE__);
 						}
 					}
 					else
 					{
-						logger(WARNING, "Should not be here", __FILE__, __LINE__);
+						logger(
+							WARNING, "Should not be here", __FILE__, __LINE__);
 					}
 				}
 				else if (n > 2)
 				{
-					logger(WARNING, "Server sending too much", __FILE__, __LINE__);
+					logger(
+						WARNING, "Server sending too much", __FILE__, __LINE__);
 				}
 				else if (n <= 0)
 				{
-					logger(NOTICE, "Server closed connection during read", __FILE__, __LINE__);
+					logger(NOTICE,
+						   "Server closed connection during read",
+						   __FILE__,
+						   __LINE__);
 					close(sock);
-					break ;
+					break;
 				}
 				else
-					logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
+					logger(
+						NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
 			}
 			else if (verified == REGISTERED)
 			{
@@ -508,13 +689,17 @@ int main(void)
 				}
 				else if (n <= 0)
 				{
-					logger(NOTICE, "Server closed connection during read", __FILE__, __LINE__);
+					logger(NOTICE,
+						   "Server closed connection during read",
+						   __FILE__,
+						   __LINE__);
 					close(sock);
-					break ;
+					break;
 				}
 				else
 				{
-					logger(NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
+					logger(
+						NOTICE, "Partial recv, retrying", __FILE__, __LINE__);
 				}
 			}
 			else

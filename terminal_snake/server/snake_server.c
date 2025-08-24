@@ -81,7 +81,7 @@ uint8_t move_pos(uint8_t pos, uint8_t dir)
 {
 	switch (dir)
 	{
-		case 0: // right
+		case 0: // right  (0xF0)
 			return (pos & ~MASK) | ((pos + 1) & MASK);
 		case 1: // down
 			return (pos + SIZE) & 0xFF;
@@ -98,18 +98,53 @@ void update_board(t_game* g)
 {
 	uint8_t	new_head = move_pos(g->player[0].segments[g->player[0].head], g->player[0].last_data.dir);
 
+	if (g->map[new_head] == MAP_FOOD)
+	{
+		g->player[0].length += 1;
+		g->player[0].score += 1000 * g->player[0].length;
+		g->map[new_head] = MAP_SNAKE1 | MAP_SNAKE_HEAD;
+		g->map[g->player[0].segments[g->player[0].head]] =
+			MAP_SNAKE1 | MAP_SNAKE_BODY;
+		g->player[0].head += 1;
+		g->player[0].segments[g->player[0].head] = new_head;
+		uint8_t r = rand() & 0xFF;
+		int		placing = 256;
+		do
+		{
+			if (g->map[r] == 0)
+			{
+				g->map[r] = MAP_FOOD;
+				placing = 0;
+				printf("a %i %i\n", r / 16, r % 16);
+			}
+			else
+			{
+				r = (r + 1) & 0xFF;
+				--placing;
+			}
+		} while (placing);
+	}
+	else if (g->map[new_head] == (MAP_SNAKE1 | MAP_SNAKE_BODY))
+	{
+		g->player[0].score -= 500 * g->player[0].length;
+		g->player[0].length -= 1;
+		g->map[g->player[0].segments[(g->player[0].head - g->player[0].length) & 0xFF]] =  0;
+	}
 	//if food get longer
 	//if obstacle get shorter
 	// remove tail from map
 	// add new head
 	//replace head with body
-	g->map[new_head] = MAP_SNAKE1 | MAP_SNAKE_HEAD;
-	g->map[g->player[0].segments[g->player[0].head]] =
-		MAP_SNAKE1 | MAP_SNAKE_BODY;
-	g->player[0].head += 1;
-	g->player[0].segments[g->player[0].head] = new_head;
-	g->map[g->player[0].segments[(g->player[0].head - g->player[0].length) & 0xFF]] =  0;
-	g->player[0].score += g->player[0].length;
+	else
+	{
+		g->map[new_head] = MAP_SNAKE1 | MAP_SNAKE_HEAD;
+		g->map[g->player[0].segments[g->player[0].head]] =
+			MAP_SNAKE1 | MAP_SNAKE_BODY;
+		g->player[0].head += 1;
+		g->player[0].segments[g->player[0].head] = new_head;
+		g->map[g->player[0].segments[(g->player[0].head - g->player[0].length) & 0xFF]] =  0;
+		g->player[0].score += g->player[0].length;
+	}
 }
 
 // typedef struct
@@ -489,9 +524,22 @@ int main(void)
 						   "Client verified, nothing to read??",
 						   __FILE__,
 						   __LINE__);
-					ssize_t n = recv(sd, s.users[i].ping_pong, 3, MSG_NOSIGNAL);
-					s.users[i].ping_pong[3] = 0;
-					(void)n;
+					if (s.game_mode == GM_PRACTICE)
+					{
+						t_packet data;
+						ssize_t n = recv(sd, &data, sizeof(t_packet), MSG_NOSIGNAL);
+						if (n == sizeof(t_packet))
+						{
+							if (((data.dir + 2) & 0x3) != s.g[i].player[0].last_data.dir)
+								s.g[i].player[0].last_data = data;
+						}
+					}
+					else
+					{
+						ssize_t n = recv(sd, s.users[i].ping_pong, 3, MSG_NOSIGNAL);
+						s.users[i].ping_pong[3] = 0;
+						(void)n;
+					}
 					// printf("%zi: %s\n", n, s.users[i].ping_pong);
 				}
 			}
