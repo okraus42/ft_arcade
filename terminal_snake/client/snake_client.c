@@ -722,7 +722,6 @@ int main(void)
 	close(sock);
 	logger(INFO, "Client exiting", __FILE__, __LINE__);
 	disableRawMode();
-	printf("/******************************************************************************/\n");
 	return 0;
 }
 
