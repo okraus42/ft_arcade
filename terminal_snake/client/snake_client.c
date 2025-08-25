@@ -17,7 +17,7 @@
 #include "snake_client.h"
 #include "timer.h"
 
-#define SERVER_IP	"127.0.0.1"
+#define SERVER_IP	"10.11.8.1"
 #define SERVER_PORT 12345
 #define BUFFER_SIZE 1024
 
@@ -722,6 +722,7 @@ int main(void)
 	close(sock);
 	logger(INFO, "Client exiting", __FILE__, __LINE__);
 	disableRawMode();
+	printf("/******************************************************************************/\n");
 	return 0;
 }
 
