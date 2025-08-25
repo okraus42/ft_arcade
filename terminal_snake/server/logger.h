@@ -5,7 +5,7 @@
 # pragma once
 #include "interface.h"
 
-#define LOG_LEVEL DEBUG1
+#define LOG_LEVEL NOLOG
 
 /* ANSI reset */
 #define ANSI_RESET "\033[0m"

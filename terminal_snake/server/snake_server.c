@@ -37,7 +37,7 @@ void shutdown_server(int signum)
 
 void init_board(t_game* g, uint8_t game_mode)
 {
-	if (game_mode == GM_WAIT1)
+	if (game_mode == GM_WAIT1 || game_mode == GM_WAIT2B)
 	{
 		g->players = 1;
 		g->map[GAME_WIDTH * 7U + 4] = MAP_SNAKE1 | MAP_SNAKE_HEAD;
@@ -194,11 +194,55 @@ void init_boards(t_server* s)
 	}
 }
 
+void reinit_boards(t_server* s)
+{
+	for (int i = 0; i < GAMES_COUNT; ++i)
+	{
+		memset(&(s->g[i]), 0, sizeof(s->g[i]));
+		s->g[i].player[0] = s->users[i];
+		init_board(&(s->g[i]), s->game_mode);
+	}
+}
+
 void update_boards(t_server* s)
 {
 	for (int i = 0; i < GAMES_COUNT; ++i)
 	{
 		update_board(&(s->g[i]));
+	}
+}
+
+void print_scores(t_server* s)
+{
+	t_snake	*players[MAX_CLIENTS]; //empty clients at 0
+	t_snake	*temp;
+	int	j = 0;
+	for (int i = 0; i < GAMES_COUNT; ++i)
+	{
+		if (s->g[i].player[0].name[0])
+			players[j++] = &(s->g[i].player[0]);
+	}
+	players[j] = 0;
+	int sort = 1;
+	while(sort)
+	{
+		sort = 0;
+		for (int i = 1; i < j; i++)
+		{
+			if ((players[i]->score > players[i - 1]->score) || (players[i]->score == players[i - 1]->score && players[i]->length > players[i - 1]->length))
+			{
+				sort = 1;
+				temp = players[i];
+				players[i] = players[i - 1];
+				players[i - 1] = temp;
+			}
+
+		}
+	}
+
+	for (int i = 0; i < j; ++i)
+	{
+		printf("%8.8s %8i %3i\n", players[i]->name, players[i]->score, players[i]->length);
 	}
 }
 
@@ -210,7 +254,7 @@ int main(void)
 	signal(SIGINT, shutdown_server);
 	memset(&s, 0, sizeof(s));
 	s.start_time = elapsed_ms(1);
-	s.end_time = elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
+	s.end_time = elapsed_ms(0) + REGISTRATION_TIME_IN_SECONDS * MS_IN_SECOND;
 	s.current_time = elapsed_ms(0);
 	s.game_mode = GM_REGISTRATION;
 	s.tick = GAME_TICK;
@@ -280,7 +324,7 @@ int main(void)
 			{
 				s.start_time = elapsed_ms(1);
 				s.end_time =
-					elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
+					elapsed_ms(0) + PRACTICE_TIME_IN_SECONDS * MS_IN_SECOND;
 				s.current_time = elapsed_ms(0);
 				s.game_mode = GM_PRACTICE;
 				s.next_tick = s.current_time + s.tick;
@@ -292,22 +336,58 @@ int main(void)
 				s.end_time =
 					elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
 				s.current_time = elapsed_ms(0);
-				s.game_mode = GM_WAIT2;
-				//reinit boards
+				s.game_mode = GM_WAIT2A;
 			}
-			else if (s.game_mode == GM_WAIT2)
+			else if (s.game_mode == GM_WAIT2A)
+			{
+				s.start_time = elapsed_ms(1);
+				s.end_time =
+					elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.current_time = elapsed_ms(0);
+				s.game_mode = GM_WAIT2B;
+				reinit_boards(&s);
+			}
+			else if (s.game_mode == GM_WAIT2B)
 			{
 				s.start_time = elapsed_ms(1);
 				s.end_time =
 					elapsed_ms(0) + GAME_TIME_IN_SECONDS * MS_IN_SECOND;
 				s.current_time = elapsed_ms(0);
 				s.game_mode = GM_QUALIFICATION;
-				//game loop
+			
 			}
+			else if (s.game_mode == GM_QUALIFICATION)
+			{
+				s.start_time = elapsed_ms(1);
+				s.end_time =
+					elapsed_ms(0) + FINAL_WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
+				s.current_time = elapsed_ms(0);
+				s.game_mode = GM_WAIT3A;
+			}
+			// else if (s.game_mode == GM_WAIT3A)
+			// {
+			// 	s.start_time = elapsed_ms(1);
+			// 	s.end_time =
+			// 		elapsed_ms(0) + WAIT_TIME_IN_SECONDS * MS_IN_SECOND;
+			// 	s.current_time = elapsed_ms(0);
+			// 	s.game_mode = GM_WAIT3B;
+			// 	//game loop
+			// }
 			else
 				break;
 		}
 		if (s.game_mode == GM_PRACTICE)
+		{
+			if (s.next_tick < s.current_time)
+			{
+				logger(INFO, "Updating boards", __FILE__, __LINE__);
+				s.next_tick = s.current_time + s.tick;
+				update_boards(&s);
+				logger(INFO, "Updated boards", __FILE__, __LINE__);
+			}
+			//game_loop
+		}
+		else if (s.game_mode == GM_QUALIFICATION)
 		{
 			if (s.next_tick < s.current_time)
 			{
@@ -524,7 +604,7 @@ int main(void)
 						   "Client verified, nothing to read??",
 						   __FILE__,
 						   __LINE__);
-					if (s.game_mode == GM_PRACTICE)
+					if (s.game_mode == GM_PRACTICE || s.game_mode == GM_QUALIFICATION)
 					{
 						t_packet data;
 						ssize_t n = recv(sd, &data, sizeof(t_packet), MSG_NOSIGNAL);
@@ -629,7 +709,9 @@ int main(void)
 			}
 		}
 	}
-
+	//print scores?
+	printf("Game ended\n");
+	print_scores(&s);
 	return 0;
 }
 

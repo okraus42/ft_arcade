@@ -7,9 +7,9 @@
 #include <stdint.h>
 
 #define PORT		12345
-#define MAX_CLIENTS 16
+#define MAX_CLIENTS 32
 #define BUFFER_SIZE 1024
-#define GAMES_COUNT 16
+#define GAMES_COUNT 32
 
 #define SECRET 42
 

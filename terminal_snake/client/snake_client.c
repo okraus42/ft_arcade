@@ -376,7 +376,12 @@ void print_game(t_game* g)
 			print_wait(g, "Practice round");
 			break;
 		}
-		case GM_WAIT2:
+		case GM_WAIT2A:
+		{
+			print_wait(g, "Practice ended");
+			break;
+		}
+		case GM_WAIT2B:
 		{
 			print_wait(g, "Game starting soon");
 			break;
@@ -384,6 +389,11 @@ void print_game(t_game* g)
 		case GM_QUALIFICATION:
 		{
 			print_wait(g, "Game");
+			break;
+		}
+		case GM_WAIT3A:
+		{
+			print_wait(g, "Thanks for playing");
 			break;
 		}
 		default:
@@ -416,7 +426,7 @@ int main(void)
 		logger(ERROR, "No username", __FILE__, __LINE__);
 		ft_exit(EXIT_FAILURE);
 	}
-	snprintf(name, 7, "%s", username);
+	snprintf(name, 9, "%s", username);
 	logger(INFO, name, __FILE__, __LINE__);
 	if (gethostname(hostname, sizeof(hostname)) == 0)
 	{
@@ -454,7 +464,7 @@ int main(void)
 	while (1)
 	{
 		elapsed_ms(1);
-		if (g.game_mode == GM_PRACTICE)
+		if (g.game_mode == GM_PRACTICE || g.game_mode == GM_QUALIFICATION)
 		{
 			write_len = check_dir(&g, &packet);
 			if (write_len && next_update < elapsed_ms(0))
@@ -482,7 +492,7 @@ int main(void)
 
 		struct timeval tv;
 		tv.tv_sec = 0;		 // seconds
-		tv.tv_usec = 100000; // microseconds (0.1s)
+		tv.tv_usec = GAME_TICK / 5; // microseconds (0.1s)
 		if ((elapsed_ms(0) / 100 % 1000) == 0)
 			logger(DEBUG1, "Before select x 1000", __FILE__, __LINE__);
 		else if ((elapsed_ms(0) / 100 % 100) == 0)
@@ -575,7 +585,7 @@ int main(void)
 				//countdown
 				// game
 				// score
-				if (g.game_mode == GM_PRACTICE)
+				if (g.game_mode == GM_PRACTICE || g.game_mode == GM_QUALIFICATION)
 				{
 					ssize_t n = send(sock, &packet, sizeof(packet), MSG_NOSIGNAL);
 					if (n <= 0)
